@@ -1,5 +1,5 @@
-import { UserRole } from "@/types/user"
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { UserRole } from "./types"
 
 export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
-  role: text("role", { enum: UserRole}).default("user").notNull(),
+  role: text("role", { enum: UserRole }).default("user").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })

@@ -1,3 +1,3 @@
-export * from "./users.schema";
-export * from "./products.schema";
-export * from "./orders.schema";
+export * from "@/modules/users/schema"
+export * from "@/modules/products/infrastructure/schema"
+export * from "@/modules/orders/schema"

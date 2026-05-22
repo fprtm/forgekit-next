@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
-import { users } from "./users.schema";
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core"
+import { users } from "@/modules/users/schema"
 
 export const orders = pgTable("orders", {
   id: text("id")
@@ -12,4 +12,4 @@ export const orders = pgTable("orders", {
   amount: integer("amount").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+})
