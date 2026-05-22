@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core"
-import { users } from "@/modules/users/schema"
+import { users } from "@/modules/users/infrastructure/schema"
 
 export const orders = pgTable("orders", {
   id: text("id")

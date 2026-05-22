@@ -1,5 +1,5 @@
 import z from "zod"
-import { UserRole } from "./types"
+import { UserRole } from "../domain/types"
 
 export const updateUserSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long"),

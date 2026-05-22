@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import { apiSuccess, apiError } from "@/lib/api-response"
 import { auth } from "@/lib/auth"
-import { UsersService } from "../service"
+import { UsersService } from "../../application/services"
 
 export async function getUserProfileHandler() {
   try {

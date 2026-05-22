@@ -1,4 +1,4 @@
-import { UsersRepository } from "./repository"
+import { UsersRepository } from "../infrastructure/repository"
 import { updateUserSchema } from "./validations"
 
 export const UsersService = {
