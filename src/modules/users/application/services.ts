@@ -1,18 +1,36 @@
 import { UsersRepository } from "../infrastructure/repository"
 import { updateUserSchema } from "./validations"
+import { UserEntity } from "../domain/types"
 
 export const UsersService = {
-  async getUserProfile(id: string) {
+  async getUsers(): Promise<UserEntity[]> {
+    const users = await UsersRepository.findMany()
+    // Remove sensitive data before sending but keep the shape for TS
+    return users.map((user) => ({
+      ...user,
+      emailVerified: null
+    })) as UserEntity[]
+  },
+
+  async getUserProfile(id: string): Promise<UserEntity> {
     const user = await UsersRepository.findById(id)
     if (!user) throw new Error("User not found")
-    // Remove sensitive data before sending
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { emailVerified, ...safeUser } = user
-    return safeUser
+    // Remove sensitive data before sending but keep the shape for TS
+    return {
+      ...user,
+      emailVerified: null
+    } as UserEntity
   },
 
   async updateProfile(id: string, input: unknown) {
     const parsed = updateUserSchema.parse(input)
     return UsersRepository.update(id, { ...parsed, updatedAt: new Date() })
+  },
+
+  async deleteUser(id: string) {
+    const existing = await UsersRepository.findById(id)
+    if (!existing) throw new Error("User not found")
+      
+    return UsersRepository.delete(id)
   }
 }

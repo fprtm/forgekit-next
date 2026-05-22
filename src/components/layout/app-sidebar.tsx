@@ -11,6 +11,7 @@ import {
   CreditCard,
   Settings,
   User,
+  Users,
   LogOut,
   ChevronUp,
 } from "lucide-react"
@@ -50,7 +51,7 @@ const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: ShoppingBag },
   { href: "/orders", label: "Orders", icon: CreditCard },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/users", label: "Users", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 

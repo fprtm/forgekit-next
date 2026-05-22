@@ -5,6 +5,32 @@ type ActionResult<T> =
   | { success: true; data: T; error: null }
   | { success: false; error: string; data: null }
 
+export async function getUsersAction(): Promise<ActionResult<unknown>> {
+  const session = await auth()
+  if (!session?.user) return { success: false, error: "Unauthorized", data: null }
+  
+  try {
+    const users = await UsersService.getUsers()
+    return { success: true, data: users, error: null }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal error"
+    return { success: false, error: message, data: null }
+  }
+}
+
+export async function getUserAction(id: string): Promise<ActionResult<unknown>> {
+  const session = await auth()
+  if (!session?.user) return { success: false, error: "Unauthorized", data: null }
+  
+  try {
+    const user = await UsersService.getUserProfile(id)
+    return { success: true, data: user, error: null }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal error"
+    return { success: false, error: message, data: null }
+  }
+}
+
 export async function getCurrentUser(): Promise<
   ActionResult<unknown> 
 > {
@@ -34,6 +60,19 @@ export async function updateUser(
   try {
     const updated = await UsersService.updateProfile(session.user.id, input)
     return { success: true, data: updated, error: null }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal error"
+    return { success: false, error: message, data: null }
+  }
+}
+
+export async function deleteUserAction(id: string): Promise<ActionResult<unknown>> {
+  const session = await auth()
+  if (!session?.user) return { success: false, error: "Unauthorized", data: null }
+  
+  try {
+    const deleted = await UsersService.deleteUser(id)
+    return { success: true, data: deleted, error: null }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal error"
     return { success: false, error: message, data: null }

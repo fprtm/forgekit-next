@@ -3,6 +3,10 @@ import { eq } from "drizzle-orm"
 import { users } from "./schema"
 
 export const UsersRepository = {
+  async findMany() {
+    return db.query.users.findMany()
+  },
+
   async findById(id: string) {
     return db.query.users.findFirst({
       where: eq(users.id, id),
@@ -16,5 +20,10 @@ export const UsersRepository = {
       .where(eq(users.id, id))
       .returning()
     return updated
+  },
+
+  async delete(id: string) {
+    const [deleted] = await db.delete(users).where(eq(users.id, id)).returning()
+    return deleted
   }
 }

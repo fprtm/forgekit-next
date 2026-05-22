@@ -15,44 +15,49 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ProductEntity } from "../../../../domain/types"
-import { useProductTable } from "./use-product-table"
+import { UserEntity } from "../../../../domain/types"
+import { useUserTable } from "./use-user-table"
 
-export function ProductTable({ data }: { data: ProductEntity[] }) {
-  const { isDeleting, handleDelete } = useProductTable()
+export function UserTable({ data }: { data: UserEntity[] }) {
+  const { isDeleting, handleDelete } = useUserTable()
 
-  const columns: ColumnDef<ProductEntity>[] = [
+  const columns: ColumnDef<UserEntity>[] = [
     {
       accessorKey: "name",
       header: "Name",
     },
     {
-      accessorKey: "price",
-      header: "Price",
+      accessorKey: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "role",
+      header: "Role",
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("price"))
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(amount)
-        return <div className="font-medium">{formatted}</div>
+        const role = row.getValue("role") as string
+        return (
+          <Badge variant={role === "admin" ? "default" : "secondary"}>
+            {role}
+          </Badge>
+        )
       },
     },
     {
       id: "actions",
       cell: ({ row }) => {
-        const product = row.original
+        const user = row.original
         return (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/products/${product.id}/edit`}>Edit</Link>
+              <Link href={`/users/${user.id}/edit`}>Edit</Link>
             </Button>
             <Button
               variant="destructive"
               size="sm"
               disabled={isDeleting}
-              onClick={() => handleDelete(product.id)}
+              onClick={() => handleDelete(user.id)}
             >
               Delete
             </Button>

@@ -1,23 +1,76 @@
 "use client"
 
 import * as React from "react"
-// Note: This is a placeholder for the actual UI implementation
-// You can build this out using shadcn/ui forms and react-hook-form
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { ProductEntity } from "../../../../domain/types"
+import { useProductForm } from "./use-product-form"
 
-export function ProductForm() {
+export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
+  const { form, onSubmit, isEditing } = useProductForm(initialData)
+
   return (
-    <form className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium">Product Name</label>
-        <input type="text" className="border rounded px-3 py-2 w-full" placeholder="Enter product name" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium">Price</label>
-        <input type="number" className="border rounded px-3 py-2 w-full" placeholder="Enter price" />
-      </div>
-      <button type="button" className="bg-blue-600 text-white px-4 py-2 rounded">
-        Save Product
-      </button>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter product name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter product description" {...field} value={field.value || ""} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Price ($)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="0.00" 
+                  {...field} 
+                  onChange={e => field.onChange(parseFloat(e.target.value))} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update Product" : "Create Product"}
+        </Button>
+      </form>
+    </Form>
   )
 }
