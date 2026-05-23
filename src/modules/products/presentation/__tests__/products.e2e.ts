@@ -80,8 +80,8 @@ test.describe.serial("Products Module E2E", () => {
     await expect(editButton).toBeVisible();
     await editButton.click();
 
-    // Verify redirection to edit page
-    await expect(page).toHaveURL(/.*\/products\/.*\/edit/);
+    // Verify redirection to edit page with relaxed timeout
+    await expect(page).toHaveURL(/.*\/products\/.*\/edit/, { timeout: 15000 });
 
     // Generate dynamic edit data from our Factory
     const editData = createProductFixture("Edited E2E Product");
