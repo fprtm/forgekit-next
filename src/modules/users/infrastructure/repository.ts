@@ -12,6 +12,12 @@ export const UsersRepository = {
     return created
   },
 
+  async findByEmail(email: string) {
+    return db.query.users.findFirst({
+      where: eq(users.email, email),
+    })
+  },
+
   async findById(id: string) {
     return db.query.users.findFirst({
       where: eq(users.id, id),
