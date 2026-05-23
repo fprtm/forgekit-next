@@ -11,7 +11,6 @@ import { test, expect } from '@playwright/test';
 import { Pool } from 'pg';
 
 test.describe.serial('Users Module E2E - Positive Path', () => {
-  let testUserId: string;
 
   /**
    * Database Setup Seeder.
@@ -20,11 +19,10 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   test.beforeAll(async () => {
     const pool = new Pool({ connectionString: 'postgresql://leviosa:leviosa@localhost:5432/forge-kit' });
     const uniqueEmail = `testuser${Date.now()}@example.com`;
-    const res = await pool.query(
-      "INSERT INTO users (id, name, email, role) VALUES (gen_random_uuid(), $1, $2, $3) RETURNING id",
+    await pool.query(
+      "INSERT INTO users (id, name, email, role) VALUES (gen_random_uuid(), $1, $2, $3)",
       ['Test Playwright User', uniqueEmail, 'user']
     );
-    testUserId = res.rows[0].id;
     await pool.end();
   });
 
@@ -107,4 +105,3 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await expect(page.getByText('User deleted successfully')).toBeVisible();
   });
 });
-export { testUserId };
