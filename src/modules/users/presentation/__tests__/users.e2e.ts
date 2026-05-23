@@ -43,7 +43,8 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    */
   test('should navigate to create user page', async ({ page }) => {
     await page.goto('/users');
-    await page.getByRole('link', { name: 'Create User' }).click();
+    // Scope the selector to the main region to prevent strict mode conflicts with sidebar sub-menu
+    await page.getByRole('main').getByRole('link', { name: 'Create User' }).click();
 
     // Verify URL with a relaxed timeout to accommodate development compilation
     await expect(page).toHaveURL(/.*\/users\/create/, { timeout: 15000 });
