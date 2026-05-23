@@ -20,9 +20,12 @@ export default defineConfig({
   outputDir: "./tests/test-results",
   use: {
     baseURL,
-    trace: 'on',
-    screenshot: 'on',
-    video: 'on',
+    trace: "on",
+    screenshot: "on",
+    video: "retain-on-failure",
+    launchOptions: {
+      slowMo: 500,
+    },
   },
   projects: [
     {
