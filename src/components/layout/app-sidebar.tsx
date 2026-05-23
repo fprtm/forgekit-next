@@ -6,12 +6,8 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  CreditCard,
   Settings,
   User,
-  Users,
   LogOut,
   ChevronUp,
 } from "lucide-react"
@@ -37,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { sidebarMenuItems } from "@/config/menu"
 
 interface AppSidebarProps {
   user?: {
@@ -46,14 +43,6 @@ interface AppSidebarProps {
     role?: string | null
   }
 }
-
-const menuItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/products", label: "Products", icon: ShoppingBag },
-  { href: "/orders", label: "Orders", icon: CreditCard },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
-]
 
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
@@ -88,16 +77,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="px-2">
-              {menuItems.map((item) => {
+              {sidebarMenuItems.map((item) => {
                 const isActive = pathname === item.href
-                const Icon = item.icon
+                 const Icon = item.icon
 
                 return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.label}
+                   <SidebarMenuItem key={item.href}>
+                     <SidebarMenuButton
+                       asChild
+                       isActive={isActive}
+                       tooltip={item.label}
                       className={cn(
                         "group/btn flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
                         isActive
