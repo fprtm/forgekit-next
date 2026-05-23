@@ -1,4 +1,3 @@
-import * as React from "react"
 import { ProductForm } from "../components/form"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"

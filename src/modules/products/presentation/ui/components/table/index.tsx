@@ -46,13 +46,14 @@ export function ProductTable({ data }: { data: ProductEntity[] }) {
         return (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/products/${product.id}/edit`}>Edit</Link>
+              <Link href={`/products/${product.id}/edit`} data-testid={`edit-button-${product.id}`}>Edit</Link>
             </Button>
             <Button
               variant="destructive"
               size="sm"
               disabled={isDeleting}
               onClick={() => handleDelete(product.id)}
+              data-testid={`delete-button-${product.id}`}
             >
               Delete
             </Button>

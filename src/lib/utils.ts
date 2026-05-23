@@ -5,6 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function waitForTyping(maxDelay: number = 500, minDelay: number = 150) {
+export function waitForTyping(maxDelay: number = 300, minDelay: number = 150) {
   return Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 }

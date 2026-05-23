@@ -11,6 +11,10 @@ import { waitForTyping } from "@/lib/utils";
 import { test, expect } from "@playwright/test";
 
 test.describe.serial("Products Module E2E", () => {
+  // 💡 Shared variables to dynamically store product names across sequential tests
+  let uniqueProductName: string;
+  let editedProductName: string;
+
   /**
    * @test should navigate to products page and display the list
    * Verify basic layout, headers, and navigation options.
@@ -37,7 +41,8 @@ test.describe.serial("Products Module E2E", () => {
   test("should successfully create a new product and see it in the list", async ({
     page,
   }) => {
-    const uniqueProductName = `Test Product ${Date.now()}`;
+    uniqueProductName = `Test Product ${Date.now()}`;
+    
     await page.goto("/products/create");
     await page
       .getByLabel("Product Name")
@@ -62,21 +67,26 @@ test.describe.serial("Products Module E2E", () => {
     // Wait for full hydration
     await page.waitForTimeout(1000);
 
-    // Find the first Edit button
-    const firstEditButton = page.getByRole("link", { name: "Edit" }).first();
-
-    // Ensure at least one Edit button exists
-    await expect(firstEditButton).toBeVisible();
-    await firstEditButton.click();
+    // 1. Find the specific row for the product we just created
+    const productRow = page.locator("tr").filter({ hasText: uniqueProductName });
+    
+    // 2. Find the edit button inside that specific row using its test-id prefix
+    const editButton = productRow.locator("[data-testid^='edit-button']");
+    await expect(editButton).toBeVisible();
+    await editButton.click();
 
     // Verify redirection to edit page
     await expect(page).toHaveURL(/.*\/products\/.*\/edit/);
 
-    const editName = `Edited Product ${Date.now()}`;
+    editedProductName = `Edited Product ${Date.now()}`;
+    
+    // Clear old input first, then type the new product name naturally
     await page.getByLabel("Product Name").clear();
     await page
       .getByLabel("Product Name")
-      .pressSequentially(editName, { delay: waitForTyping() });
+      .pressSequentially(editedProductName, { delay: waitForTyping() });
+    
+    // Clear old price first, then type the new price naturally
     await page.getByLabel("Price").clear();
     await page
       .getByLabel("Price")
@@ -84,11 +94,11 @@ test.describe.serial("Products Module E2E", () => {
 
     await page.getByRole("button", { name: "Update Product" }).click();
 
-    // Verify back to list with updated values
+    // Verify returning back to listing page with updated values
     await expect(page).toHaveURL(/.*\/products$/);
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText(editName)).toBeVisible();
+    await expect(page.getByText(editedProductName)).toBeVisible();
   });
 
   /**
@@ -101,15 +111,17 @@ test.describe.serial("Products Module E2E", () => {
     // Wait for full hydration
     await page.waitForTimeout(1000);
 
-    const firstDeleteButton = page
-      .getByRole("button", { name: "Delete" })
-      .first();
-    await expect(firstDeleteButton).toBeVisible();
+    // 1. Find the specific row for the product we edited
+    const productRow = page.locator("tr").filter({ hasText: editedProductName });
+
+    // 2. Find the delete button inside that specific row using its test-id prefix
+    const deleteButton = productRow.locator("[data-testid^='delete-button']");
+    await expect(deleteButton).toBeVisible();
 
     // Accept standard browser confirmation dialog
     page.on("dialog", (dialog) => dialog.accept());
 
-    await firstDeleteButton.click();
+    await deleteButton.click();
 
     // Verify success notification popup
     await expect(page.getByText("Product deleted successfully")).toBeVisible();
