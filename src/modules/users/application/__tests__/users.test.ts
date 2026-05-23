@@ -12,7 +12,7 @@ import { describe, expect, it, mock, beforeEach } from "bun:test";
 // Mock server-only to prevent client component errors in tests
 mock.module("server-only", () => { return {} });
 
-import { updateUserSchema } from "../validations";
+import { updateUserSchema, createUserSchema } from "../validations";
 import { UsersService } from "../services";
 import { UsersRepository } from "../../infrastructure/repository";
 
@@ -31,6 +31,7 @@ mock.module("../../infrastructure/repository", () => {
       findById: mock(),
       update: mock(),
       delete: mock(),
+      create: mock(),
     }
   };
 });
@@ -45,6 +46,7 @@ const mockFindMany = UsersRepository.findMany as unknown as MockedFunction<typeo
 const mockFindById = UsersRepository.findById as unknown as MockedFunction<typeof UsersRepository.findById>;
 const mockUpdate = UsersRepository.update as unknown as MockedFunction<typeof UsersRepository.update>;
 const mockDelete = UsersRepository.delete as unknown as MockedFunction<typeof UsersRepository.delete>;
+const mockCreate = UsersRepository.create as unknown as MockedFunction<typeof UsersRepository.create>;
 
 // =========================================================================
 // Main Test Suites
@@ -58,6 +60,7 @@ describe("Users Module Unit Tests", () => {
     mockFindById.mockClear();
     mockUpdate.mockClear();
     mockDelete.mockClear();
+    mockCreate.mockClear();
   });
 
   /**
@@ -93,6 +96,36 @@ describe("Users Module Unit Tests", () => {
         expect(result.success).toBe(false);
       });
     });
+
+    describe("createUserSchema", () => {
+      /**
+       * Test valid user creation payload.
+       */
+      it("should accept valid user creation data", () => {
+        const validData = {
+          name: "New User",
+          email: "newuser@example.com",
+          role: "user" as const,
+        };
+        
+        const result = createUserSchema.safeParse(validData);
+        expect(result.success).toBe(true);
+      });
+
+      /**
+       * Test invalid email formatting.
+       */
+      it("should reject invalid email formatting", () => {
+        const invalidData = {
+          name: "New User",
+          email: "invalid-email",
+          role: "user" as const,
+        };
+        
+        const result = createUserSchema.safeParse(invalidData);
+        expect(result.success).toBe(false);
+      });
+    });
   });
 
   /**
@@ -116,6 +149,21 @@ describe("Users Module Unit Tests", () => {
       expect(result[0].emailVerified).toBeNull();
       expect(result[0].email).toBe("user1@test.com");
       expect(UsersRepository.findMany).toHaveBeenCalled();
+    });
+
+    /**
+     * Test creating a user profile.
+     */
+    it("should create a user profile successfully", async () => {
+      const input = { name: "New User", email: "newuser@example.com", role: "user" as const };
+      const mockUser = { id: "2", ...input, emailVerified: new Date(), image: null, createdAt: new Date(), updatedAt: new Date() };
+      mockCreate.mockResolvedValue(mockUser);
+
+      const result = await UsersService.createUser(input);
+      
+      expect(result.emailVerified).toBeNull();
+      expect(result.name).toBe("New User");
+      expect(UsersRepository.create).toHaveBeenCalled();
     });
 
     /**

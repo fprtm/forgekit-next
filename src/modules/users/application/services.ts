@@ -1,5 +1,5 @@
 import { UsersRepository } from "../infrastructure/repository"
-import { updateUserSchema, UpdateUserDTO } from "./validations"
+import { updateUserSchema, UpdateUserDTO, createUserSchema, CreateUserDTO } from "./validations"
 import { UserEntity } from "../domain/types"
 
 export const UsersService = {
@@ -10,6 +10,15 @@ export const UsersService = {
       ...user,
       emailVerified: null
     })) as UserEntity[]
+  },
+
+  async createUser(input: CreateUserDTO): Promise<UserEntity> {
+    const parsed = createUserSchema.parse(input)
+    const created = await UsersRepository.create({ ...parsed })
+    return {
+      ...created,
+      emailVerified: null
+    } as UserEntity
   },
 
   async getUserProfile(id: string): Promise<UserEntity> {

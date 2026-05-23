@@ -22,7 +22,7 @@ import { UserEntity } from "../../../../domain/types"
 import { useUserForm } from "./use-user-form"
 
 export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
-  const { form, onSubmit } = useUserForm(initialData)
+  const { form, onSubmit, isEditing } = useUserForm(initialData)
 
   return (
     <Form {...form}>
@@ -35,6 +35,26 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
               <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter user's name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Email Field - only editable when creating a new user */}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  {...field} 
+                  disabled={isEditing} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -64,7 +84,7 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
         />
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Saving..." : "Update User"}
+          {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update User" : "Create User"}
         </Button>
       </form>
     </Form>

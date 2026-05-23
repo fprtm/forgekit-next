@@ -1,30 +1,15 @@
 /**
  * @file users.e2e.ts
  * @description End-to-End browser UI tests for the Users module.
- * This file verifies user management features including listings, custom role and name modifications,
+ * This file verifies user management features including creation, listings, custom role and name modifications,
  * and user deletion workflows inside a live browser environment driven by Playwright.
  * 
  * @module Users/Presentation/Tests/E2E
  */
 
 import { test, expect } from '@playwright/test';
-import { Pool } from 'pg';
 
 test.describe.serial('Users Module E2E - Positive Path', () => {
-
-  /**
-   * Database Setup Seeder.
-   * Inject a clean test user into the database before starting the E2E suite to guarantee test stability.
-   */
-  test.beforeAll(async () => {
-    const pool = new Pool({ connectionString: 'postgresql://leviosa:leviosa@localhost:5432/forge-kit' });
-    const uniqueEmail = `testuser${Date.now()}@example.com`;
-    await pool.query(
-      "INSERT INTO users (id, name, email, role) VALUES (gen_random_uuid(), $1, $2, $3)",
-      ['Test Playwright User', uniqueEmail, 'user']
-    );
-    await pool.end();
-  });
 
   /**
    * @test should navigate to users page and display the list
@@ -46,6 +31,47 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Role' })).toBeVisible();
+  });
+
+  /**
+   * @test should navigate to create user page
+   * Verify redirection and existence of crucial form fields.
+   */
+  test('should navigate to create user page', async ({ page }) => {
+    await page.goto('/users');
+    await page.getByRole('link', { name: 'Create User' }).click();
+
+    // Verify URL
+    await expect(page).toHaveURL(/.*\/users\/create/);
+
+    // Verify form exists
+    await expect(page.getByRole('heading', { name: 'Create User' })).toBeVisible();
+    await expect(page.getByLabel('Full Name')).toBeVisible();
+    await expect(page.getByLabel('Email Address')).toBeVisible();
+    await expect(page.getByLabel('Role')).toBeVisible();
+  });
+
+  /**
+   * @test should successfully create a new user and see it in the list
+   * Verify full data flow from input forms, Next.js Server Actions, Drizzle, PostgreSQL to UI Table.
+   */
+  test('should successfully create a new user and see it in the list', async ({ page }) => {
+    const uniqueEmail = `testuser${Date.now()}@example.com`;
+    const uniqueName = `Playwright User ${Date.now()}`;
+    
+    await page.goto('/users/create');
+    await page.getByLabel('Full Name').fill(uniqueName);
+    await page.getByLabel('Email Address').fill(uniqueEmail);
+    
+    // Select role UI
+    await page.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'User' }).click();
+    
+    await page.getByRole('button', { name: 'Create User' }).click();
+
+    await expect(page).toHaveURL(/.*\/users$/);
+    await page.waitForTimeout(1000);
+    await expect(page.getByText(uniqueName)).toBeVisible();
   });
 
   /**

@@ -7,6 +7,11 @@ export const UsersRepository = {
     return db.query.users.findMany()
   },
 
+  async create(data: typeof users.$inferInsert) {
+    const [created] = await db.insert(users).values(data).returning()
+    return created
+  },
+
   async findById(id: string) {
     return db.query.users.findFirst({
       where: eq(users.id, id),

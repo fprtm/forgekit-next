@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth"
 import { UsersService } from "../../application/services"
 import { UserEntity } from "../../domain/types"
-import { UpdateUserDTO } from "../../application/validations"
+import { UpdateUserDTO, CreateUserDTO } from "../../application/validations"
 
 type ActionResult<T> =
   | { success: true; data: T; error: null }
@@ -81,6 +81,21 @@ export async function deleteUserAction(id: string): Promise<ActionResult<UserEnt
   try {
     const deleted = await UsersService.deleteUser(id)
     return { success: true, data: deleted, error: null }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal error"
+    return { success: false, error: message, data: null }
+  }
+}
+
+export async function createUserAction(input: CreateUserDTO): Promise<ActionResult<UserEntity>> {
+  const session = await auth()
+  if (!session?.user || session.user.role !== "admin") {
+    return { success: false, error: "Unauthorized", data: null }
+  }
+  
+  try {
+    const user = await UsersService.createUser(input)
+    return { success: true, data: user, error: null }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal error"
     return { success: false, error: message, data: null }
