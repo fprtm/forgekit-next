@@ -4,6 +4,7 @@ import { UserRole } from "../domain/types"
 export const updateUserSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long"),
   role: z.enum(UserRole),
+  email: z.string().email("Invalid email address").optional(),
 })
 
 export const createUserSchema = z.object({

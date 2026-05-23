@@ -60,6 +60,9 @@ Contains everything the user interacts with.
 4. **Server Actions First**
    Mutations are handled exclusively via Server Actions located in `presentation/ui/actions.ts`. These actions validate input, call the Application Service, and return a standardized `{ success: boolean, data?: T, error?: string }` object.
 
+5. **Dynamic Modular Seeding**
+   Every module manages its own data seeding locally under `infrastructure/seeder.ts` by exporting a named `seed` function: `export async function seed(db: NodePgDatabase)`. The global seeder runner `scripts/seed.ts` automatically scans the `modules/` directory at runtime, imports active seeders dynamically, and executes them with full type-safety and 100% decoupling.
+
 ---
 
 ## 💻 Getting Started
@@ -106,6 +109,8 @@ Contains everything the user interacts with.
 - `bun run test:e2e`: Runs E2E browser tests only.
 - `bun run db:generate`: Generates SQL migrations from Drizzle schemas.
 - `bun run db:push`: Pushes schema changes directly to the database.
+- `bun run db:seed`: Runs the dynamic database seeder engine (seeds all modules).
+- `bun run db:seed --module <name>`: Runs the database seeder for a specific module (e.g. `--module users`).
 - `bun run db:studio`: Opens Drizzle Studio to inspect database tables.
 
 ---

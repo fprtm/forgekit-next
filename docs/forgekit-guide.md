@@ -898,3 +898,46 @@ Sebelum deploy ke production:
 | Error tracking | Sentry |
 | Realtime | Pusher / Ably |
 
+---
+
+## 9. Modul Autentikasi (DDD 4-Layer & OAuth Generik)
+
+ForgeKit menerapkan autentikasi NextAuth (v5 / Auth.js) secara terstruktur penuh ke dalam pola modular DDD 4-Layer.
+
+### Pemisahan Arsitektur Auth:
+* **Edge-Compatible Config (`src/config/auth.ts` & `src/config/env.ts`)**: Konfigurasi dasar yang *Edge-safe* (OAuth provider, Pages redirect) agar dapat diimpor langsung oleh `middleware.ts` Next.js tanpa memicu error modul Node.js yang tidak didukung di Edge runtime.
+* **Full-Server Lib (`src/lib/auth.ts`)**: Inisialisasi penuh NextAuth tingkat server yang menampung `DrizzleAdapter` dan provider `Credentials` (email & sandi). Lapisan ini bebas melakukan kueri database dan verifikasi password menggunakan pustaka enkripsi berat (`bcrypt`).
+
+### Dukungan OAuth Generik & Dinamis:
+Anda dapat mengontrol apakah tombol masuk sosial (OAuth) aktif atau tidak melalui variabel lingkungan:
+* **`NEXT_PUBLIC_ENABLE_OAUTH="true"`**: Menampilkan tombol OAuth (seperti Google) secara dinamis di halaman masuk (`/login`) dan mendaftarkannya di NextAuth.
+* **`NEXT_PUBLIC_ENABLE_OAUTH="false"`**: Secara otomatis menyembunyikan tombol masuk sosial dan garis pemisah pada antarmuka halaman login, menyisakan form masuk Kredensial email yang sangat bersih.
+
+---
+
+## 10. Sistem Database Seeding Modular & Dinamis
+
+ForgeKit menyertakan mesin seeding basis data sentral (`scripts/seed.ts`) yang sangat pintar, modular, dan 100% *type-safe* tanpa bergantung pada tipe data `any` yang berbahaya.
+
+### Karakteristik Utama Seeder Modular:
+1. **Pemisahan Tanggung Jawab (Decoupled)**: Setiap modul mengelola logika datanya sendiri di dalam folder infrastrukturnya masing-masing.
+   * Modul Users: `src/modules/users/infrastructure/seeder.ts`
+   * Modul Products: `src/modules/products/infrastructure/seeder.ts`
+2. **Standardisasi API**: Setiap berkas seeder modul wajib mengekspor fungsi bernama `seed` dengan parameter database Drizzle bertipe data default:
+   ```typescript
+   import { NodePgDatabase } from "drizzle-orm/node-postgres";
+   export async function seed(db: NodePgDatabase) {
+     // Logika insert data ke database menggunakan db.insert(...)
+   }
+   ```
+3. **Deteksi Otomatis & Dinamis**: Skrip sentral `scripts/seed.ts` secara otomatis memindai direktori `src/modules` saat dijalankan, mencari berkas `seeder.ts` yang aktif, melakukan impor dinamis (`await import`), dan mengeksekusinya secara berurutan.
+
+### Cara Menjalankan Seeder:
+* **Menjalankan Seluruh Seeder Modul**:
+  ```bash
+  bun run db:seed
+  ```
+* **Menjalankan Seeder Modul Tertentu Saja (Flag `--module` / `-m`)**:
+  ```bash
+  bun run db:seed --module users
+  ```

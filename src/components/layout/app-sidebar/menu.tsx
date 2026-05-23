@@ -17,6 +17,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -32,6 +33,7 @@ interface AppSidebarMenuProps {
 
 export function AppSidebarMenu({ user }: AppSidebarMenuProps) {
   const pathname = usePathname();
+  const { state, setOpen } = useSidebar();
 
   // Filter top-level menu items by user's role permission
   const allowedItems = sidebarMenuItems.filter((item) => {
@@ -71,6 +73,12 @@ export function AppSidebarMenu({ user }: AppSidebarMenuProps) {
                         <SidebarMenuButton
                           isActive={isActive}
                           tooltip={item.label}
+                          onClick={(e) => {
+                            if (state === "collapsed") {
+                              e.preventDefault();
+                              setOpen(true);
+                            }
+                          }}
                           className={cn(
                             "group/btn flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
                             isActive

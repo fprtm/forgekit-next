@@ -8,7 +8,7 @@ import { UserEntity } from "../../../../domain/types"
 
 export interface UserFormValues {
   name: string
-  email: string
+  email?: string
   role: "admin" | "user"
 }
 
@@ -28,7 +28,7 @@ export function useUserForm(initialData?: UserEntity) {
   async function onSubmit(data: UserFormValues) {
     const res = isEditing && initialData
       ? await updateUser({ name: data.name, role: data.role }, initialData.id)
-      : await createUserAction(data)
+      : await createUserAction({ name: data.name, email: data.email!, role: data.role })
 
     if (res.success) {
       toast.success(isEditing ? "User updated successfully!" : "User created successfully!")
