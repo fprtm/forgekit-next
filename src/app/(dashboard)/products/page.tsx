@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { ProductListPage } from "@/modules/products/presentation/ui/pages/list"
 import { ProductsService } from "@/modules/products/application/services"
 

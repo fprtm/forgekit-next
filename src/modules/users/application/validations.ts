@@ -12,4 +12,5 @@ export const loginSchema = z.object({
 })
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
+export type UpdateUserDTO = z.input<typeof updateUserSchema>
 export type LoginInput = z.infer<typeof loginSchema>

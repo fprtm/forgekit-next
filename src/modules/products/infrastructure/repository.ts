@@ -4,10 +4,10 @@ import { products } from "./schema"
 import { CreateProductInput, UpdateProductInput } from "../domain/types"
 
 export const ProductsRepository = {
-  async findMany(search: string, limit: number) {
+  async findMany(search?: string, limit?: number) {
     return db.query.products.findMany({
       where: search ? ilike(products.name, `%${search}%`) : undefined,
-      limit,
+      limit: limit ?? 10,
       orderBy: [desc(products.createdAt)],
     })
   },

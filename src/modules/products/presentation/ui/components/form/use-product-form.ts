@@ -33,7 +33,6 @@ export function useProductForm(initialData?: ProductEntity) {
     if (res.success) {
       toast.success(isEditing ? "Product updated!" : "Product created!")
       router.push("/products")
-      router.refresh()
     } else {
       toast.error(res.error)
     }

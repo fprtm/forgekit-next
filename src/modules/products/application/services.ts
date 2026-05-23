@@ -1,8 +1,8 @@
 import { ProductsRepository } from "../infrastructure/repository"
-import { createProductSchema, updateProductSchema } from "./validations"
+import { createProductSchema, updateProductSchema, CreateProductDTO, UpdateProductDTO } from "./validations"
 
 export const ProductsService = {
-  async getProducts(search: string, limit: number) {
+  async getProducts(search?: string, limit?: number) {
     return ProductsRepository.findMany(search, limit)
   },
 
@@ -12,12 +12,12 @@ export const ProductsService = {
     return product
   },
 
-  async createProduct(input: unknown) {
+  async createProduct(input: CreateProductDTO) {
     const parsed = createProductSchema.parse(input)
     return ProductsRepository.create(parsed)
   },
 
-  async updateProduct(id: string, input: unknown) {
+  async updateProduct(id: string, input: UpdateProductDTO) {
     const parsed = updateProductSchema.parse(input)
     const existing = await ProductsRepository.findById(id)
     if (!existing) throw new Error("Product not found")

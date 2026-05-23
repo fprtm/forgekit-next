@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: forge-kit-db
+    restart: always
+    environment:
+      POSTGRES_USER: leviosa
+      POSTGRES_PASSWORD: leviosa
+      POSTGRES_DB: forge-kit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

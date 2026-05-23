@@ -18,11 +18,10 @@ export function useUserForm(initialData?: UserEntity) {
   })
 
   async function onSubmit(data: UpdateUserInput) {
-    const res = await updateUser(data)
+    const res = await updateUser(data, initialData?.id)
     if (res.success) {
       toast.success("User updated successfully!")
       router.push("/users")
-      router.refresh()
     } else {
       toast.error(res.error)
     }

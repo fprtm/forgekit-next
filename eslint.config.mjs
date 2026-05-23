@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Exclude testing results from linting
+    "tests/playwright-report/**",
+    "tests/test-results/**",
   ]),
 ]);
 

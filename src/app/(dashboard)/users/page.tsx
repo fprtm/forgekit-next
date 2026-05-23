@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { UserListPage } from "@/modules/users/presentation/ui/pages/list"
 import { UsersService } from "@/modules/users/application/services"
 

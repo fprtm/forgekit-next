@@ -1,5 +1,5 @@
 import { UsersRepository } from "../infrastructure/repository"
-import { updateUserSchema } from "./validations"
+import { updateUserSchema, UpdateUserDTO } from "./validations"
 import { UserEntity } from "../domain/types"
 
 export const UsersService = {
@@ -22,9 +22,14 @@ export const UsersService = {
     } as UserEntity
   },
 
-  async updateProfile(id: string, input: unknown) {
+  async updateProfile(id: string, input: UpdateUserDTO): Promise<UserEntity> {
     const parsed = updateUserSchema.parse(input)
-    return UsersRepository.update(id, { ...parsed, updatedAt: new Date() })
+    const updated = await UsersRepository.update(id, { ...parsed, updatedAt: new Date() })
+    if (!updated) throw new Error("User not found")
+    return {
+      ...updated,
+      emailVerified: null
+    } as UserEntity
   },
 
   async deleteUser(id: string) {

@@ -2,10 +2,11 @@ import { UserEditPage } from "@/modules/users/presentation/ui/pages/edit"
 import { UsersService } from "@/modules/users/application/services"
 import { notFound } from "next/navigation"
 
-export default async function EditUserRoute({ params }: { params: { id: string } }) {
+export default async function EditUserRoute({ params }: { params: Promise<{ id: string }> }) {
   let user;
   try {
-    user = await UsersService.getUserProfile(params.id)
+    const { id } = await params;
+    user = await UsersService.getUserProfile(id)
   } catch (error) {
     return notFound()
   }
