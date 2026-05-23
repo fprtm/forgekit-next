@@ -51,7 +51,7 @@ async function main() {
       console.log(`\n\x1b[33m--- 🌐 Running E2E Browser Tests ---\x1b[0m`);
       let playwrightCmd = "bunx playwright test";
       if (moduleName) {
-        playwrightCmd += ` tests/e2e/${moduleName}.e2e.ts`;
+        playwrightCmd += ` src/modules/${moduleName}/presentation/__tests__/${moduleName}.e2e.ts`;
       }
       if (headed) {
         playwrightCmd += " --headed";
