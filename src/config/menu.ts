@@ -1,7 +1,6 @@
 import {
   LayoutDashboard,
   ShoppingBag,
-  CreditCard,
   Settings,
   Users,
   type LucideIcon,
@@ -23,18 +22,17 @@ export interface SidebarMenuItem {
 }
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/products", label: "Products", icon: ShoppingBag },
-  { href: "/orders", label: "Orders", icon: CreditCard },
+  { href: "/d", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/d/products", label: "Products", icon: ShoppingBag },
   {
-    href: "/users",
+    href: "/d/users",
     label: "Users",
     icon: Users,
     requiredRole: "admin", // Only accessible by admin role
     children: [
-      { href: "/users", label: "List Users" },
-      { href: "/users/create", label: "Create User" },
+      { href: "/d/users", label: "List Users" },
+      { href: "/d/users/create", label: "Create User" },
     ],
   },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/d/settings", label: "Settings", icon: Settings },
 ];

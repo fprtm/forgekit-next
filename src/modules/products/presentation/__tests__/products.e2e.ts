@@ -24,7 +24,7 @@ test.describe.serial("Products Module E2E", () => {
     page,
   }) => {
     // Navigate to products page
-    await page.goto("/products");
+    await page.goto("/d/products");
 
     // Check if the page title or main heading exists
     await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
@@ -46,7 +46,7 @@ test.describe.serial("Products Module E2E", () => {
     const productData = createProductFixture("E2E Product");
     uniqueProductName = productData.name;
 
-    await page.goto("/products/create");
+    await page.goto("/d/products/create");
     await page
       .getByLabel("Product Name")
       .pressSequentially(uniqueProductName, { delay: waitForTyping() });
@@ -55,7 +55,7 @@ test.describe.serial("Products Module E2E", () => {
       .pressSequentially(productData.price, { delay: waitForTyping() });
     await page.getByRole("button", { name: "Create Product" }).click();
 
-    await expect(page).toHaveURL(/.*\/products$/);
+    await expect(page).toHaveURL(/.*\/d\/products$/);
     await page.waitForTimeout(1000);
     await expect(page.getByText(uniqueProductName)).toBeVisible();
   });
@@ -65,7 +65,7 @@ test.describe.serial("Products Module E2E", () => {
    * Verify updates to name and price, and that changes are visually reflected.
    */
   test("should successfully edit a product", async ({ page }) => {
-    await page.goto("/products");
+    await page.goto("/d/products");
 
     // Wait for full hydration
     await page.waitForTimeout(1000);
@@ -81,7 +81,7 @@ test.describe.serial("Products Module E2E", () => {
     await editButton.click();
 
     // Verify redirection to edit page with relaxed timeout
-    await expect(page).toHaveURL(/.*\/products\/.*\/edit/, { timeout: 15000 });
+    await expect(page).toHaveURL(/.*\/d\/products\/.*\/edit/, { timeout: 15000 });
 
     // Generate dynamic edit data from our Factory
     const editData = createProductFixture("Edited E2E Product");
@@ -102,7 +102,7 @@ test.describe.serial("Products Module E2E", () => {
     await page.getByRole("button", { name: "Update Product" }).click();
 
     // Verify returning back to listing page with updated values
-    await expect(page).toHaveURL(/.*\/products$/);
+    await expect(page).toHaveURL(/.*\/d\/products$/);
     await page.waitForTimeout(1000);
 
     await expect(page.getByText(editedProductName)).toBeVisible();
@@ -113,7 +113,7 @@ test.describe.serial("Products Module E2E", () => {
    * Verify database deletion triggers, standard browser confirmation, and Success Toast reaction.
    */
   test("should successfully delete a product", async ({ page }) => {
-    await page.goto("/products");
+    await page.goto("/d/products");
 
     // Wait for full hydration
     await page.waitForTimeout(1000);
@@ -143,7 +143,7 @@ test.describe.serial("Products Module E2E", () => {
   test("should show validation errors on empty form submit", async ({
     page,
   }) => {
-    await page.goto("/products/create");
+    await page.goto("/d/products/create");
     await page.getByRole("button", { name: "Create Product" }).click();
 
     // The zod validation should show errors

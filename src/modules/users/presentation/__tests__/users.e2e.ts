@@ -20,7 +20,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify listing page mounts and displays user tables.
    */
   test('should navigate to users page and display the list', async ({ page }) => {
-    await page.goto('/users');
+    await page.goto('/d/users');
     await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
     await expect(page.locator('table')).toBeVisible();
   });
@@ -30,7 +30,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify that essential metadata headers are fully rendered in the viewport.
    */
   test('should display correct table headers', async ({ page }) => {
-    await page.goto('/users');
+    await page.goto('/d/users');
     
     await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
@@ -42,12 +42,12 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify redirection and existence of crucial form fields.
    */
   test('should navigate to create user page', async ({ page }) => {
-    await page.goto('/users');
+    await page.goto('/d/users');
     // Scope the selector to the main region to prevent strict mode conflicts with sidebar sub-menu
     await page.getByRole('main').getByRole('link', { name: 'Create User' }).click();
 
     // Verify URL with a relaxed timeout to accommodate development compilation
-    await expect(page).toHaveURL(/.*\/users\/create/, { timeout: 15000 });
+    await expect(page).toHaveURL(/.*\/d\/users\/create/, { timeout: 15000 });
 
     // Verify form exists
     await expect(page.getByRole('heading', { name: 'Create User' })).toBeVisible();
@@ -65,7 +65,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     const userData = createUserFixture("E2E User");
     uniqueUserName = userData.name;
     
-    await page.goto('/users/create');
+    await page.goto('/d/users/create');
     await page.getByLabel('Full Name').fill(uniqueUserName);
     await page.getByLabel('Email Address').fill(userData.email);
     
@@ -75,7 +75,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     
     await page.getByRole('button', { name: 'Create User' }).click();
 
-    await expect(page).toHaveURL(/.*\/users$/, { timeout: 15000 });
+    await expect(page).toHaveURL(/.*\/d\/users$/, { timeout: 15000 });
     await page.waitForTimeout(1000);
     await expect(page.getByText(uniqueUserName)).toBeVisible();
   });
@@ -85,7 +85,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify full administration profile updates (role and name editing) via Server Actions.
    */
   test('should successfully edit a user role', async ({ page }) => {
-    await page.goto('/users');
+    await page.goto('/d/users');
     
     // Wait for full hydration
     await page.waitForTimeout(1000);
@@ -99,7 +99,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await editButton.click();
 
     // Verify redirection to profile editing page with relaxed timeout
-    await expect(page).toHaveURL(/.*\/users\/.*\/edit/, { timeout: 15000 });
+    await expect(page).toHaveURL(/.*\/d\/users\/.*\/edit/, { timeout: 15000 });
 
     // Edit full name field with unique name from Factory
     const editData = createUserFixture("Edited E2E User");
@@ -115,7 +115,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await page.getByRole('button', { name: 'Update User' }).click();
 
     // Verify returning back to listing page with updated profile info
-    await expect(page).toHaveURL(/.*\/users$/, { timeout: 15000 });
+    await expect(page).toHaveURL(/.*\/d\/users$/, { timeout: 15000 });
     await page.waitForTimeout(1000);
     
     await expect(page.getByText(editedUserName)).toBeVisible();
@@ -126,7 +126,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify standard deletion triggers, dialog confirmation, and Success Toast reaction.
    */
   test('should successfully delete a user', async ({ page }) => {
-    await page.goto('/users');
+    await page.goto('/d/users');
     
     // Wait for full hydration
     await page.waitForTimeout(1000);

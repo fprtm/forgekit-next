@@ -32,7 +32,7 @@ export function useLoginForm() {
         toast.error("Invalid credentials, please try again.");
       } else {
         toast.success("Welcome back! Logging in...");
-        router.push("/");
+        router.push("/d");
         router.refresh();
       }
     } catch (error) {
@@ -46,7 +46,7 @@ export function useLoginForm() {
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/" });
+      await signIn("google", { callbackUrl: "/d" });
     } catch (error) {
       toast.error("Google sign in failed.");
       console.error(error);

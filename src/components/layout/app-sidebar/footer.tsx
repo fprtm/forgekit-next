@@ -81,7 +81,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
             >
               <DropdownMenuItem asChild>
                 <Link
-                  href="/profile"
+                  href="/d/profile"
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800/50 cursor-pointer"
                 >
                   <User className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href="/settings"
+                  href="/d/settings"
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800/50 cursor-pointer"
                 >
                   <Settings className="h-4 w-4" />
