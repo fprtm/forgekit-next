@@ -51,13 +51,14 @@ export function UserTable({ data }: { data: UserEntity[] }) {
         return (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/users/${user.id}/edit`}>Edit</Link>
+              <Link href={`/users/${user.id}/edit`} data-testid={`edit-button-${user.id}`}>Edit</Link>
             </Button>
             <Button
               variant="destructive"
               size="sm"
               disabled={isDeleting}
               onClick={() => handleDelete(user.id)}
+              data-testid={`delete-button-${user.id}`}
             >
               Delete
             </Button>

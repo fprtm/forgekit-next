@@ -9,6 +9,7 @@
 
 import { waitForTyping } from "@/lib/utils";
 import { test, expect } from "@playwright/test";
+import { createProductFixture } from "./product.factory";
 
 test.describe.serial("Products Module E2E", () => {
   // 💡 Shared variables to dynamically store product names across sequential tests
@@ -41,15 +42,17 @@ test.describe.serial("Products Module E2E", () => {
   test("should successfully create a new product and see it in the list", async ({
     page,
   }) => {
-    uniqueProductName = `Test Product ${Date.now()}`;
-    
+    // Generate a unique product template from our Factory
+    const productData = createProductFixture("E2E Product");
+    uniqueProductName = productData.name;
+
     await page.goto("/products/create");
     await page
       .getByLabel("Product Name")
       .pressSequentially(uniqueProductName, { delay: waitForTyping() });
     await page
       .getByLabel("Price")
-      .pressSequentially("15000", { delay: waitForTyping() });
+      .pressSequentially(productData.price, { delay: waitForTyping() });
     await page.getByRole("button", { name: "Create Product" }).click();
 
     await expect(page).toHaveURL(/.*\/products$/);
@@ -68,8 +71,10 @@ test.describe.serial("Products Module E2E", () => {
     await page.waitForTimeout(1000);
 
     // 1. Find the specific row for the product we just created
-    const productRow = page.locator("tr").filter({ hasText: uniqueProductName });
-    
+    const productRow = page
+      .locator("tr")
+      .filter({ hasText: uniqueProductName });
+
     // 2. Find the edit button inside that specific row using its test-id prefix
     const editButton = productRow.locator("[data-testid^='edit-button']");
     await expect(editButton).toBeVisible();
@@ -78,14 +83,16 @@ test.describe.serial("Products Module E2E", () => {
     // Verify redirection to edit page
     await expect(page).toHaveURL(/.*\/products\/.*\/edit/);
 
-    editedProductName = `Edited Product ${Date.now()}`;
-    
+    // Generate dynamic edit data from our Factory
+    const editData = createProductFixture("Edited E2E Product");
+    editedProductName = editData.name;
+
     // Clear old input first, then type the new product name naturally
     await page.getByLabel("Product Name").clear();
     await page
       .getByLabel("Product Name")
       .pressSequentially(editedProductName, { delay: waitForTyping() });
-    
+
     // Clear old price first, then type the new price naturally
     await page.getByLabel("Price").clear();
     await page
@@ -112,7 +119,9 @@ test.describe.serial("Products Module E2E", () => {
     await page.waitForTimeout(1000);
 
     // 1. Find the specific row for the product we edited
-    const productRow = page.locator("tr").filter({ hasText: editedProductName });
+    const productRow = page
+      .locator("tr")
+      .filter({ hasText: editedProductName });
 
     // 2. Find the delete button inside that specific row using its test-id prefix
     const deleteButton = productRow.locator("[data-testid^='delete-button']");

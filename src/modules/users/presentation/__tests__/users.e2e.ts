@@ -8,8 +8,12 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { createUserFixture } from './user.factory';
 
 test.describe.serial('Users Module E2E - Positive Path', () => {
+  // 💡 Shared variables to dynamically store user profiles across sequential tests
+  let uniqueUserName: string;
+  let editedUserName: string;
 
   /**
    * @test should navigate to users page and display the list
@@ -41,8 +45,8 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await page.goto('/users');
     await page.getByRole('link', { name: 'Create User' }).click();
 
-    // Verify URL
-    await expect(page).toHaveURL(/.*\/users\/create/);
+    // Verify URL with a relaxed timeout to accommodate development compilation
+    await expect(page).toHaveURL(/.*\/users\/create/, { timeout: 15000 });
 
     // Verify form exists
     await expect(page.getByRole('heading', { name: 'Create User' })).toBeVisible();
@@ -56,12 +60,13 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
    * Verify full data flow from input forms, Next.js Server Actions, Drizzle, PostgreSQL to UI Table.
    */
   test('should successfully create a new user and see it in the list', async ({ page }) => {
-    const uniqueEmail = `testuser${Date.now()}@example.com`;
-    const uniqueName = `Playwright User ${Date.now()}`;
+    // Generate unique user profile from our Factory
+    const userData = createUserFixture("E2E User");
+    uniqueUserName = userData.name;
     
     await page.goto('/users/create');
-    await page.getByLabel('Full Name').fill(uniqueName);
-    await page.getByLabel('Email Address').fill(uniqueEmail);
+    await page.getByLabel('Full Name').fill(uniqueUserName);
+    await page.getByLabel('Email Address').fill(userData.email);
     
     // Select role UI
     await page.getByRole('combobox').click();
@@ -69,9 +74,9 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     
     await page.getByRole('button', { name: 'Create User' }).click();
 
-    await expect(page).toHaveURL(/.*\/users$/);
+    await expect(page).toHaveURL(/.*\/users$/, { timeout: 15000 });
     await page.waitForTimeout(1000);
-    await expect(page.getByText(uniqueName)).toBeVisible();
+    await expect(page.getByText(uniqueUserName)).toBeVisible();
   });
 
   /**
@@ -84,17 +89,23 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     // Wait for full hydration
     await page.waitForTimeout(1000);
     
-    // Find the first edit option
-    const firstEditButton = page.getByRole('link', { name: 'Edit' }).first();
-    await expect(firstEditButton).toBeVisible();
-    await firstEditButton.click();
+    // 1. Find the specific row for the user we just created
+    const userRow = page.locator("tr").filter({ hasText: uniqueUserName });
 
-    // Verify redirection to profile editing page
-    await expect(page).toHaveURL(/.*\/users\/.*\/edit/);
+    // 2. Find the edit button inside that specific row using its test-id prefix
+    const editButton = userRow.locator("[data-testid^='edit-button']");
+    await expect(editButton).toBeVisible();
+    await editButton.click();
 
-    // Edit full name field
-    const editName = `Edited User ${Date.now()}`;
-    await page.getByLabel('Full Name').fill(editName);
+    // Verify redirection to profile editing page with relaxed timeout
+    await expect(page).toHaveURL(/.*\/users\/.*\/edit/, { timeout: 15000 });
+
+    // Edit full name field with unique name from Factory
+    const editData = createUserFixture("Edited E2E User");
+    editedUserName = editData.name;
+
+    await page.getByLabel('Full Name').clear();
+    await page.getByLabel('Full Name').fill(editedUserName);
     
     // Trigger Select UI dropdown and change user role to Admin
     await page.getByRole('combobox').click();
@@ -103,10 +114,10 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     await page.getByRole('button', { name: 'Update User' }).click();
 
     // Verify returning back to listing page with updated profile info
-    await expect(page).toHaveURL(/.*\/users$/);
+    await expect(page).toHaveURL(/.*\/users$/, { timeout: 15000 });
     await page.waitForTimeout(1000);
     
-    await expect(page.getByText(editName)).toBeVisible();
+    await expect(page.getByText(editedUserName)).toBeVisible();
   });
 
   /**
@@ -119,13 +130,17 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     // Wait for full hydration
     await page.waitForTimeout(1000);
 
-    const firstDeleteButton = page.getByRole('button', { name: 'Delete' }).first();
-    await expect(firstDeleteButton).toBeVisible();
+    // 1. Find the specific row for the user we edited
+    const userRow = page.locator("tr").filter({ hasText: editedUserName });
+
+    // 2. Find the delete button inside that specific row using its test-id prefix
+    const deleteButton = userRow.locator("[data-testid^='delete-button']");
+    await expect(deleteButton).toBeVisible();
 
     // Accept standard browser confirmation dialog
     page.on('dialog', dialog => dialog.accept());
 
-    await firstDeleteButton.click();
+    await deleteButton.click();
 
     // Verify success notification popup
     await expect(page.getByText('User deleted successfully')).toBeVisible();
