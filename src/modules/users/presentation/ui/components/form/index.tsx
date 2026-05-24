@@ -28,11 +28,12 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
+      <div className="flex gap-4">
+          <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter user's name" {...field} />
@@ -47,7 +48,7 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Email Address</FormLabel>
               <FormControl>
                 <Input 
@@ -61,6 +62,7 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
             </FormItem>
           )}
         />
+      </div>
 
         <FormField
           control={form.control}
