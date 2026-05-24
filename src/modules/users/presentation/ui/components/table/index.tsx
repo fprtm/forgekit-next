@@ -19,9 +19,17 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { formatRole } from "@/lib/utils"
 import { UserEntity } from "../../../../domain/types"
+import { AuthUser } from "@/modules/auth/domain/types"
 import { useUserTable } from "./use-user-table"
+import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
 
-export function UserTable({ data }: { data: UserEntity[] }) {
+export function UserTable({
+  data,
+  currentUser,
+}: {
+  data: UserEntity[]
+  currentUser: AuthUser | null | undefined
+}) {
   const { isDeleting, handleDelete } = useUserTable()
 
   const columns: ColumnDef<UserEntity>[] = [
@@ -51,18 +59,30 @@ export function UserTable({ data }: { data: UserEntity[] }) {
         const user = row.original
         return (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/users/${user.id}/edit`} data-testid={`edit-button-${user.id}`}>Edit</Link>
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={isDeleting}
-              onClick={() => handleDelete(user.id)}
-              data-testid={`delete-button-${user.id}`}
+            <PermissionGate
+              action="users:update"
+              user={currentUser}
+              resource={{ ownerId: user.id }}
             >
-              Delete
-            </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/users/${user.id}/edit`} data-testid={`edit-button-${user.id}`}>Edit</Link>
+              </Button>
+            </PermissionGate>
+            <PermissionGate
+              action="users:delete"
+              user={currentUser}
+              resource={{ ownerId: user.id }}
+            >
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => handleDelete(user.id)}
+                data-testid={`delete-button-${user.id}`}
+              >
+                Delete
+              </Button>
+            </PermissionGate>
           </div>
         )
       },
