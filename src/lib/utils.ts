@@ -21,3 +21,15 @@ export function generateUniqueString(prefix: string): string {
   const randomSuffix = Math.floor(Math.random() * 1000);
   return `${prefix} ${timestamp} ${randomSuffix}`;
 }
+
+/**
+ * Utility to parse role codes by replacing underscores with spaces and capitalizing words.
+ * E.g., 'super_admin' -> 'Super Admin', 'standard_user' -> 'Standard User'
+ */
+export function formatRole(role: string | null | undefined): string {
+  if (!role) return "";
+  return role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

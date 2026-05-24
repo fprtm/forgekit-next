@@ -9,11 +9,18 @@ import { Action, AuthUser, ResourceContext } from "./types";
  * Can be configured dynamically or loaded from an external config/database.
  */
 let ROLE_PERMISSIONS: Record<string, string[]> = {
-  admin: [
+  super_admin: [
     "users:read",
     "users:update",
     "users:create",
     "users:delete",
+    "products:create",
+    "products:read",
+    "products:update",
+    "products:delete",
+  ],
+  admin: [
+    "users:read",
     "products:create",
     "products:read",
     "products:update",
@@ -31,13 +38,16 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
  * Roles that automatically bypass all resource ownership checks (Super Admins).
  * Completely configurable to support roles like 'super_admin', 'operator', etc.
  */
-let SUPER_ROLES: string[] = ["admin"];
+let SUPER_ROLES: string[] = ["super_admin"];
 
 // =========================================================================
 // 2. Extensible Resource Validator Registry (DDD-Aligned & Modular)
 // =========================================================================
 
-export type ResourceValidator = (user: AuthUser, resource: ResourceContext) => boolean;
+export type ResourceValidator = (
+  user: AuthUser,
+  resource: ResourceContext,
+) => boolean;
 
 // Central registry for domain-specific validators
 const validators: Record<string, ResourceValidator> = {};
@@ -74,7 +84,7 @@ export const authPolicies = {
    */
   getValidator(action: string): ResourceValidator | undefined {
     return validators[action];
-  }
+  },
 };
 
 // =========================================================================
@@ -89,10 +99,19 @@ export const authPolicies = {
  * - `false` if ownership does not match the user.
  * - `null` if no ownership fields were found on the resource context.
  */
-export function defaultOwnershipChecker(user: AuthUser, resource: ResourceContext): boolean | null {
-  const genericOwnershipKeys = ["ownerId", "userId", "sellerId", "authorId", "createdBy"];
+export function defaultOwnershipChecker(
+  user: AuthUser,
+  resource: ResourceContext,
+): boolean | null {
+  const genericOwnershipKeys = [
+    "ownerId",
+    "userId",
+    "sellerId",
+    "authorId",
+    "createdBy",
+  ];
   let foundOwnershipKey = false;
-  
+
   for (const key of genericOwnershipKeys) {
     const val = resource[key];
     if (typeof val === "string") {
@@ -102,7 +121,7 @@ export function defaultOwnershipChecker(user: AuthUser, resource: ResourceContex
       }
     }
   }
-  
+
   return foundOwnershipKey ? false : null;
 }
 
@@ -126,7 +145,7 @@ export function can(
   user: AuthUser | null | undefined,
   action: Action | string,
   resourceContext?: ResourceContext,
-  customValidator?: ResourceValidator
+  customValidator?: ResourceValidator,
 ): boolean {
   if (!user || !user.role) {
     return false;
@@ -159,14 +178,14 @@ export function can(
     // 3c. Fallback to default ownership checking for modification actions
     if (action.endsWith(":update") || action.endsWith(":delete")) {
       const checkResult = defaultOwnershipChecker(user, resourceContext);
-      
+
       if (checkResult === null) {
         // FAIL FAST! Inform developer they missed registration or database columns.
         throw new Error(
-          `[Authorization Failure - Fail-Fast Registry] Action '${action}' requires resource validation, but no domain validator has been registered and the provided resource context has no standard ownership keys (ownerId, userId, sellerId, authorId, createdBy). \n\n👉 Solution: Register a custom validator via 'authPolicies.registerValidator("${action}", ...)' or add a valid ownership key to the database table.`
+          `[Authorization Failure - Fail-Fast Registry] Action '${action}' requires resource validation, but no domain validator has been registered and the provided resource context has no standard ownership keys (ownerId, userId, sellerId, authorId, createdBy). \n\n👉 Solution: Register a custom validator via 'authPolicies.registerValidator("${action}", ...)' or add a valid ownership key to the database table.`,
         );
       }
-      
+
       return checkResult;
     }
   }

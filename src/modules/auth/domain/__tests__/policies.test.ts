@@ -6,13 +6,13 @@ describe("Domain Policy Authorization Tests", () => {
   
   // 1. Action Authorization Tests
   describe("Action Authorization (RBAC)", () => {
-    it("should allow admin role to perform any action", () => {
+    it("should allow admin role to perform allowed actions but deny users modifications", () => {
       const adminUser: AuthUser = { id: "admin-1", role: "admin" };
       
-      expect(can(adminUser, "users:create")).toBe(true);
       expect(can(adminUser, "users:read")).toBe(true);
-      expect(can(adminUser, "users:update")).toBe(true);
-      expect(can(adminUser, "users:delete")).toBe(true);
+      expect(can(adminUser, "users:create")).toBe(false);
+      expect(can(adminUser, "users:update")).toBe(false);
+      expect(can(adminUser, "users:delete")).toBe(false);
       expect(can(adminUser, "products:create")).toBe(true);
       expect(can(adminUser, "products:read")).toBe(true);
       expect(can(adminUser, "products:update")).toBe(true);
@@ -78,13 +78,13 @@ describe("Domain Policy Authorization Tests", () => {
 
   // 3. Super Admin Override
   describe("Super Admin Override", () => {
-    const adminUser: AuthUser = { id: "admin-1", role: "admin" };
+    const superAdminUser: AuthUser = { id: "admin-1", role: "super_admin" };
 
-    it("should allow admin to bypass ownership constraints on any resource context", () => {
+    it("should allow super_admin to bypass ownership constraints on any resource context", () => {
       const otherUserProduct = { id: "prod-1", sellerId: "user-2" };
 
-      expect(can(adminUser, "products:update", otherUserProduct)).toBe(true);
-      expect(can(adminUser, "products:delete", otherUserProduct)).toBe(true);
+      expect(can(superAdminUser, "products:update", otherUserProduct)).toBe(true);
+      expect(can(superAdminUser, "products:delete", otherUserProduct)).toBe(true);
     });
   });
 

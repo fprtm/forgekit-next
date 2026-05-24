@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createUserSchema, updateUserSchema } from "../../../../application/validations"
 import { updateUser, createUserAction } from "../../actions"
-import { UserEntity } from "../../../../domain/types"
+import { UserEntity, UserRole } from "../../../../domain/types"
 
 export interface UserFormValues {
   name: string
   email?: string
-  role: "admin" | "user"
+  role: UserRole
 }
 
 export function useUserForm(initialData?: UserEntity) {

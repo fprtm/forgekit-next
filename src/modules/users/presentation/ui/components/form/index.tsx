@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { UserEntity } from "../../../../domain/types"
+import { UserEntity, UserRole } from "../../../../domain/types"
+import { formatRole } from "@/lib/utils"
 import { useUserForm } from "./use-user-form"
 
 export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
@@ -74,8 +75,11 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  {UserRole.filter((role) => role !== "super_admin").map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {formatRole(role)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

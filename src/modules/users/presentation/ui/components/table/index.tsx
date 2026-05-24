@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { formatRole } from "@/lib/utils"
 import { UserEntity } from "../../../../domain/types"
 import { useUserTable } from "./use-user-table"
 
@@ -38,8 +39,8 @@ export function UserTable({ data }: { data: UserEntity[] }) {
       cell: ({ row }) => {
         const role = row.getValue("role") as string
         return (
-          <Badge variant={role === "admin" ? "default" : "secondary"}>
-            {role}
+          <Badge variant={role === "super_admin" ? "default" : "secondary"}>
+            {formatRole(role)}
           </Badge>
         )
       },

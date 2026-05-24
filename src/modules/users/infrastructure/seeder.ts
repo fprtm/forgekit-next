@@ -21,7 +21,7 @@ export async function seed(db: NodePgDatabase) {
       name: "Administrator Test",
       email: testEmail,
       password: hashedPassword,
-      role: "admin",
+      role: "super_admin",
     })
     .onConflictDoNothing();
 
