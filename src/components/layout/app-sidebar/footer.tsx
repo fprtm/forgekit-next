@@ -48,7 +48,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="w-full flex items-center justify-between rounded-xl p-2 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
+                className="w-full flex items-center justify-center rounded-xl p-2 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Avatar className="h-8 w-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
