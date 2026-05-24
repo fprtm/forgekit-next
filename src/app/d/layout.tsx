@@ -1,0 +1,14 @@
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import DashboardLayout from "@/components/layout/dashboard.layout"
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await auth()
+  if (!session) redirect("/login")
+
+  return <DashboardLayout session={session}>{children}</DashboardLayout>
+}

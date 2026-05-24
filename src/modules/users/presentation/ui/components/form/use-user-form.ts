@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createUserSchema, updateUserSchema } from "../../../../application/validations"
 import { updateUser, createUserAction } from "../../actions"
-import { UserEntity } from "../../../../domain/types"
+import { UserEntity, UserRole } from "../../../../domain/types"
 
 export interface UserFormValues {
   name: string
-  email: string
-  role: "admin" | "user"
+  email?: string
+  role: UserRole
 }
 
 export function useUserForm(initialData?: UserEntity) {
@@ -28,7 +28,7 @@ export function useUserForm(initialData?: UserEntity) {
   async function onSubmit(data: UserFormValues) {
     const res = isEditing && initialData
       ? await updateUser({ name: data.name, role: data.role }, initialData.id)
-      : await createUserAction(data)
+      : await createUserAction({ name: data.name, email: data.email!, role: data.role })
 
     if (res.success) {
       toast.success(isEditing ? "User updated successfully!" : "User created successfully!")

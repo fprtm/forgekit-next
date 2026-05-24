@@ -766,32 +766,109 @@ bun dev
 
 ---
 
-## Cara Tambah Modul Baru
+## 14. Evolusi Arsitektur: Modular Clean Architecture (DDD)
 
-Misal mau tambah modul **Product**:
+Sebagai repositori skala enterprise, boilerplate ini telah berevolusi dari struktur Next.js tradisional ke **Modular Clean Architecture (Domain-Driven Design)** di bawah direktori `src/modules/`. Pemisahan ini memastikan kode fungsional bisnis terisolasi sempurna dan siap dikembangkan tanpa batas oleh banyak tim sekaligus.
 
-```bash
-# 1. Buat schema
-touch src/db/schema/product.ts
+### A. Anatomi 4-Layer Taxonomy per Modul
+Setiap modul baru (misal: `products`, `users`, `orders`) wajib mematuhi struktur folder 4-Layer berikut:
 
-# 2. Export di index
-# tambah: export * from "./product" di src/db/schema/index.ts
-
-# 3. Buat validation
-touch src/lib/validations/product.ts
-
-# 4. Buat actions
-touch src/actions/product.ts
-
-# 5. Buat page
-mkdir -p src/app/(dashboard)/products
-touch src/app/(dashboard)/products/page.tsx
-
-# 6. Generate migration baru
-bun db:generate && bun db:push
+```text
+src/modules/<module-name>/
+├── domain/                 # 1. CORE LAYER (Tipe & Entitas murni tanpa dependensi)
+│   └── types.ts            
+│
+├── application/            # 2. USE CASES LAYER (Zod Validations & Service Logic)
+│   ├── validations.ts      
+│   ├── services.ts         
+│   └── use-cases/          # [Scale-out] Dibagi per berkas jika service terlalu besar
+│
+├── infrastructure/         # 3. EXTERNAL LAYER (Drizzle Schema & Query Repositories)
+│   ├── schema.ts           
+│   └── repository.ts       
+│
+└── presentation/           # 4. DELIVERY LAYER (Delivery UI & HTTP Controllers)
+    ├── http/               # API Route Handlers
+    │   └── route-handlers.ts 
+    └── ui/                 # Next.js Server & Client Components
+        ├── components/     # Sub-komponen modular (Form, Table, dsb)
+        └── pages/          # Halaman React utuh yang diekspos ke App Router
 ```
 
-Pattern ini sama untuk semua modul — tidak ada yang perlu diubah di tempat lain.
+### B. Aturan Emas Arsitektur (Architecture Guardrails)
+1. **The Dependency Rule**: Aliran dependensi wajib mengarah ke dalam (`domain`). Layer core (`domain`) tidak boleh mengimpor apa pun dari layer luar.
+2. **Thin Next.js App Router**: Direktori `src/app/` dilarang keras mengandung logika bisnis. File router Next.js hanya bertindak sebagai *Thin Router* yang memetakan URL langsung ke halaman React di `presentation/ui/pages/`.
+3. **Deep UI Separation**: UI kompleks (seperti form validasi interaktif dan tabel dinamis) wajib diletakkan di dalam folder `components/` milik modul masing-masing untuk menjaga kerapian kode.
+
+### C. Daftar Modul Aktif Saat Ini
+1. **Products (`src/modules/products`)**:
+   - Mengelola katalog produk lengkap dengan form pembuatan, edit harga, validasi, dan alur hapus otomatis.
+2. **Users (`src/modules/users`)**:
+   - Mengelola data profil pengguna dan sistem administrasi pengguna (manajemen Nama, Email, dan Role Admin/User).
+3. **Orders (`src/modules/orders`)**:
+   - Modul skeleton terstruktur untuk menampung alur transaksi pemesanan di masa depan.
+
+---
+
+## 15. Sistem Pengujian Terpadu (Enterprise Testing Suite)
+
+Boilerplate ini dilengkapi dengan **ForgeKit Unified Test Runner**, sebuah sistem otomatisasi pengujian modular yang menggabungkan unit test berkecepatan tinggi (`bun test`) dan pengujian browser visual E2E (`Playwright`).
+
+### A. Perintah Menjalankan Pengujian
+```bash
+# Menjalankan seluruh tes (Unit & E2E) untuk modul tertentu secara otomatis
+bun run test --module <module-name>
+
+# Contoh: Menguji modul products
+bun run test --module products
+
+# Menjalankan seluruh Unit Test secara global
+bun run test:unit
+```
+
+### B. Standardisasi Best-Practice Pengujian yang Diterapkan
+1. **Database-Agnostic E2E**: Seluruh pengujian E2E tidak memiliki ketergantungan pada seed database statis. Alur pembuatan, penyuntingan, dan penghapusan diuji secara berurutan dalam satu sesi pengujian untuk menjamin database tetap bersih (*database hygiene*).
+2. **Global Unique Generator & Domain Factories**:
+   - Menggunakan generator global `generateUniqueString(prefix)` di `src/lib/utils.ts` untuk memastikan tidak ada data bertabrakan di database saat tes paralel dijalankan.
+   - Setiap modul memiliki Factory dinamis terisolasi (seperti `product.factory.ts` dan `user.factory.ts` di folder presentasi masing-masing) untuk merakit payload pengujian.
+3. **Human-like Interaction**: Form pengisian menggunakan `.pressSequentially()` dengan jeda waktu acak (*random delay*) dan penundaan kecepatan aksi global (`slowMo: 500` di `playwright.config.ts`) agar jalannya visualisasi browser terasa nyata.
+4. **E2E Scoping & Outer Variables**: Menghindari tabrakan strict-mode Playwright dengan memfilter locator spesifik per baris tabel (`page.locator("tr").filter({ hasText: name })`) dan mencocokkan tombol aksi via dynamic `data-testid` (misal: `edit-button-${id}`).
+
+---
+
+## 16. Cara Menambah Modul Baru dengan Arsitektur DDD
+
+Jika Anda ingin menambahkan modul baru, misalnya **Payments**:
+
+```bash
+# 1. Buat folder 4-Layer Clean Architecture
+mkdir -p src/modules/payments/domain
+mkdir -p src/modules/payments/application
+mkdir -p src/modules/payments/infrastructure
+mkdir -p src/modules/payments/presentation/ui/components
+mkdir -p src/modules/payments/presentation/ui/pages
+
+# 2. Definisikan Schema Drizzle di infrastruktur
+touch src/modules/payments/infrastructure/schema.ts
+
+# 3. Export Schema baru di global schema index
+# Tambahkan: export * from "@/modules/payments/infrastructure/schema" di src/db/schema/index.ts
+
+# 4. Definisikan tipe entitas di domain
+touch src/modules/payments/domain/types.ts
+
+# 5. Buat validasi Zod & use case business logic di application
+touch src/modules/payments/application/validations.ts
+touch src/modules/payments/application/services.ts
+
+# 6. Buat UI Components, React Pages, & Actions Server di presentation
+touch src/modules/payments/presentation/ui/pages/list.tsx
+touch src/modules/payments/presentation/ui/actions.ts
+
+# 7. Daftarkan rute tipis di App Router Next.js
+mkdir -p src/app/\(dashboard\)/payments
+touch src/app/\(dashboard\)/payments/page.tsx # panggil <PaymentListPage /> dari modul presentasi
+```
 
 ---
 
@@ -820,3 +897,47 @@ Sebelum deploy ke production:
 | Analytics | Posthog |
 | Error tracking | Sentry |
 | Realtime | Pusher / Ably |
+
+---
+
+## 9. Modul Autentikasi (DDD 4-Layer & OAuth Generik)
+
+ForgeKit menerapkan autentikasi NextAuth (v5 / Auth.js) secara terstruktur penuh ke dalam pola modular DDD 4-Layer.
+
+### Pemisahan Arsitektur Auth:
+* **Edge-Compatible Config (`src/config/auth.ts` & `src/config/env.ts`)**: Konfigurasi dasar yang *Edge-safe* (OAuth provider, Pages redirect) agar dapat diimpor langsung oleh `middleware.ts` Next.js tanpa memicu error modul Node.js yang tidak didukung di Edge runtime.
+* **Full-Server Lib (`src/lib/auth.ts`)**: Inisialisasi penuh NextAuth tingkat server yang menampung `DrizzleAdapter` dan provider `Credentials` (email & sandi). Lapisan ini bebas melakukan kueri database dan verifikasi password menggunakan pustaka enkripsi berat (`bcrypt`).
+
+### Dukungan OAuth Generik & Dinamis:
+Anda dapat mengontrol apakah tombol masuk sosial (OAuth) aktif atau tidak melalui variabel lingkungan:
+* **`NEXT_PUBLIC_ENABLE_OAUTH="true"`**: Menampilkan tombol OAuth (seperti Google) secara dinamis di halaman masuk (`/login`) dan mendaftarkannya di NextAuth.
+* **`NEXT_PUBLIC_ENABLE_OAUTH="false"`**: Secara otomatis menyembunyikan tombol masuk sosial dan garis pemisah pada antarmuka halaman login, menyisakan form masuk Kredensial email yang sangat bersih.
+
+---
+
+## 10. Sistem Database Seeding Modular & Dinamis
+
+ForgeKit menyertakan mesin seeding basis data sentral (`scripts/seed.ts`) yang sangat pintar, modular, dan 100% *type-safe* tanpa bergantung pada tipe data `any` yang berbahaya.
+
+### Karakteristik Utama Seeder Modular:
+1. **Pemisahan Tanggung Jawab (Decoupled)**: Setiap modul mengelola logika datanya sendiri di dalam folder infrastrukturnya masing-masing.
+   * Modul Users: `src/modules/users/infrastructure/seeder.ts`
+   * Modul Products: `src/modules/products/infrastructure/seeder.ts`
+2. **Standardisasi API**: Setiap berkas seeder modul wajib mengekspor fungsi bernama `seed` dengan parameter database Drizzle bertipe data default:
+   ```typescript
+   import { NodePgDatabase } from "drizzle-orm/node-postgres";
+   export async function seed(db: NodePgDatabase) {
+     // Logika insert data ke database menggunakan db.insert(...)
+   }
+   ```
+3. **Deteksi Otomatis & Dinamis**: Skrip sentral `scripts/seed.ts` secara otomatis memindai direktori `src/modules` saat dijalankan, mencari berkas `seeder.ts` yang aktif, melakukan impor dinamis (`await import`), dan mengeksekusinya secara berurutan.
+
+### Cara Menjalankan Seeder:
+* **Menjalankan Seluruh Seeder Modul**:
+  ```bash
+  bun run db:seed
+  ```
+* **Menjalankan Seeder Modul Tertentu Saja (Flag `--module` / `-m`)**:
+  ```bash
+  bun run db:seed --module users
+  ```

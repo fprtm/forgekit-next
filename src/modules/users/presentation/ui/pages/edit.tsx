@@ -3,10 +3,11 @@ import { UserProfileForm } from "../components/form"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { UserEntity } from "../../../domain/types"
+import Wrapper from "@/components/layout/wrapper"
 
 export function UserEditPage({ user }: { user: UserEntity }) {
   return (
-    <div className="p-8 space-y-8 max-w-2xl mx-auto">
+    <Wrapper>
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild>
           <Link href="/users">← Back</Link>
@@ -17,6 +18,6 @@ export function UserEditPage({ user }: { user: UserEntity }) {
       <div className="bg-white p-6 border rounded-lg shadow-sm">
         <UserProfileForm initialData={user} />
       </div>
-    </div>
+    </Wrapper>
   )
 }

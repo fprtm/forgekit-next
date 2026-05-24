@@ -5,11 +5,12 @@ export const env = createEnv({
     server: {
         DATABASE_URL: z.url(),
         AUTH_SECRET: z.string(),
-        AUTH_GOOGLE_ID: z.string(),
-        AUTH_GOOGLE_SECRET: z.string(),
+        AUTH_GOOGLE_ID: z.string().optional(),
+        AUTH_GOOGLE_SECRET: z.string().optional(),
     },
     client: {
         NEXT_PUBLIC_APP_URL: z.url(),
+        NEXT_PUBLIC_ENABLE_OAUTH: z.string().optional().default("false"),
     },
     runtimeEnv: {
         DATABASE_URL: process.env.DATABASE_URL,
@@ -17,5 +18,6 @@ export const env = createEnv({
         AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
         AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        NEXT_PUBLIC_ENABLE_OAUTH: process.env.NEXT_PUBLIC_ENABLE_OAUTH,
     },
 })

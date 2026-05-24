@@ -1,10 +1,11 @@
 import { ProductForm } from "../components/form"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Wrapper from "@/components/layout/wrapper"
 
 export function ProductCreatePage() {
   return (
-    <div className="p-8 space-y-8 max-w-2xl mx-auto">
+    <Wrapper>
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild>
           <Link href="/products">← Back</Link>
@@ -15,6 +16,6 @@ export function ProductCreatePage() {
       <div className="bg-white p-6 border rounded-lg shadow-sm">
         <ProductForm />
       </div>
-    </div>
+    </Wrapper>
   )
 }

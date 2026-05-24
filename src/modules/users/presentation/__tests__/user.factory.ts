@@ -7,11 +7,12 @@
  */
 
 import { generateUniqueString } from "@/lib/utils";
+import { UserRole } from "../../domain/types";
 
 export interface UserFixture {
   name: string;
   email: string;
-  role: "user" | "admin";
+  role: UserRole;
 }
 
 /**

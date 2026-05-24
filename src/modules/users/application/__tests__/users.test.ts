@@ -156,7 +156,7 @@ describe("Users Module Unit Tests", () => {
      */
     it("should create a user profile successfully", async () => {
       const input = { name: "New User", email: "newuser@example.com", role: "user" as const };
-      const mockUser = { id: "2", ...input, emailVerified: new Date(), image: null, createdAt: new Date(), updatedAt: new Date() };
+      const mockUser = { id: "2", ...input, emailVerified: new Date(), image: null, password: null, createdAt: new Date(), updatedAt: new Date() };
       mockCreate.mockResolvedValue(mockUser);
 
       const result = await UsersService.createUser(input);
@@ -170,7 +170,7 @@ describe("Users Module Unit Tests", () => {
      * Test retrieving a single user profile (masks emailVerified date for safety).
      */
     it("should get a single user profile and mask emailVerified", async () => {
-      const mockUser = { id: "1", name: "User1", email: "user1@test.com", emailVerified: new Date(), image: null, role: "user" as const, createdAt: new Date(), updatedAt: new Date() };
+      const mockUser = { id: "1", name: "User1", email: "user1@test.com", emailVerified: new Date(), image: null, password: null, role: "user" as const, createdAt: new Date(), updatedAt: new Date() };
       mockFindById.mockResolvedValue(mockUser);
 
       const result = await UsersService.getUserProfile("1");

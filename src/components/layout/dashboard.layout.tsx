@@ -1,16 +1,16 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Session } from "next-auth"
+import React from "react"
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
+  session
 }: {
   children: React.ReactNode
+  session: Session
 }) {
-  const session = await auth()
-  if (!session) redirect("/login")
 
   return (
     <TooltipProvider>

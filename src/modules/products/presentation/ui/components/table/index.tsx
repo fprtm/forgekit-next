@@ -17,9 +17,18 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ProductEntity } from "../../../../domain/types"
+import { AuthUser } from "@/modules/auth/domain/types"
 import { useProductTable } from "./use-product-table"
+import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
+import "@/modules/products/domain/policies";
 
-export function ProductTable({ data }: { data: ProductEntity[] }) {
+export function ProductTable({
+  data,
+  currentUser,
+}: {
+  data: ProductEntity[]
+  currentUser: AuthUser | null | undefined
+}) {
   const { isDeleting, handleDelete } = useProductTable()
 
   const columns: ColumnDef<ProductEntity>[] = [
@@ -45,18 +54,30 @@ export function ProductTable({ data }: { data: ProductEntity[] }) {
         const product = row.original
         return (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/products/${product.id}/edit`} data-testid={`edit-button-${product.id}`}>Edit</Link>
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={isDeleting}
-              onClick={() => handleDelete(product.id)}
-              data-testid={`delete-button-${product.id}`}
+            <PermissionGate
+              action="products:update"
+              user={currentUser}
+              resource={{id: product.id}}
             >
-              Delete
-            </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/products/${product.id}/edit`} data-testid={`edit-button-${product.id}`}>Edit</Link>
+              </Button>
+            </PermissionGate>
+            <PermissionGate
+              action="products:delete"
+              user={currentUser}
+              resource={{id: product.id}}
+            >
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => handleDelete(product.id)}
+                data-testid={`delete-button-${product.id}`}
+              >
+                Delete
+              </Button>
+            </PermissionGate>
           </div>
         )
       },
@@ -71,7 +92,7 @@ export function ProductTable({ data }: { data: ProductEntity[] }) {
   })
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
