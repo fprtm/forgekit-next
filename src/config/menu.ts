@@ -1,3 +1,4 @@
+import { Action } from "@/modules/auth/domain/types";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -10,29 +11,50 @@ export interface SidebarSubMenuItem {
   href: string;
   label: string;
   icon?: LucideIcon;
-  requiredRole?: "user" | "admin";
+  requiredAction?: Action;
 }
 
 export interface SidebarMenuItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  requiredRole?: "user" | "admin";
+  requiredAction?: Action;
   children?: SidebarSubMenuItem[];
 }
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
-  { href: "/d", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/d/products", label: "Products", icon: ShoppingBag },
+  { 
+    href: "/d", 
+    label: "Dashboard", 
+    icon: LayoutDashboard 
+  },
+  { 
+    href: "/d/products", 
+    label: "Products", 
+    icon: ShoppingBag,
+    requiredAction: "products:read"
+  },
   {
     href: "/d/users",
     label: "Users",
     icon: Users,
-    requiredRole: "admin", // Only accessible by admin role
+    requiredAction: "users:read",
     children: [
-      { href: "/d/users", label: "List Users" },
-      { href: "/d/users/create", label: "Create User" },
+      { 
+        href: "/d/users", 
+        label: "List Users", 
+        requiredAction: "users:read" 
+      },
+      { 
+        href: "/d/users/create", 
+        label: "Create User", 
+        requiredAction: "users:create" 
+      },
     ],
   },
-  { href: "/d/settings", label: "Settings", icon: Settings },
+  { 
+    href: "/d/settings", 
+    label: "Settings", 
+    icon: Settings 
+  },
 ];

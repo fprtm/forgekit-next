@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sidebarMenuItems } from "@/config/menu";
+import { can } from "@/modules/auth/domain/policies";
+import { AuthUser } from "@/modules/auth/domain/types";
 import {
   SidebarContent,
   SidebarGroup,
@@ -27,7 +29,10 @@ import {
 
 interface AppSidebarMenuProps {
   user?: {
+    id?: string;
     role?: string | null;
+    name?: string | null;
+    email?: string | null;
   };
 }
 
@@ -35,10 +40,13 @@ export function AppSidebarMenu({ user }: AppSidebarMenuProps) {
   const pathname = usePathname();
   const { state, setOpen } = useSidebar();
 
-  // Filter top-level menu items by user's role permission
+  // Filter top-level menu items by user's action permission
   const allowedItems = sidebarMenuItems.filter((item) => {
-    if (item.requiredRole && user?.role !== item.requiredRole) {
-      return false;
+    if (item.requiredAction) {
+      const authUser: AuthUser | null = user 
+        ? { id: user.id || "", role: user.role || "" } 
+        : null;
+      return can(authUser, item.requiredAction);
     }
     return true;
   });
@@ -105,11 +113,15 @@ export function AppSidebarMenu({ user }: AppSidebarMenuProps) {
                       <CollapsibleContent>
                         <SidebarMenuSub>
                           {item.children
-                            .filter(
-                              (sub) =>
-                                !sub.requiredRole ||
-                                user?.role === sub.requiredRole
-                            )
+                            .filter((sub) => {
+                              if (sub.requiredAction) {
+                                const authUser: AuthUser | null = user
+                                  ? { id: user.id || "", role: user.role || "" }
+                                  : null;
+                                return can(authUser, sub.requiredAction);
+                              }
+                              return true;
+                            })
                             .map((subItem) => {
                               const isSubActive = pathname === subItem.href;
                               return (
