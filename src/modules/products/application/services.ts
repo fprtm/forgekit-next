@@ -2,13 +2,24 @@ import { ProductsRepository } from "../infrastructure/repository"
 import { createProductSchema, updateProductSchema, CreateProductDTO, UpdateProductDTO } from "./validations"
 import { can } from "@/modules/auth/domain/policies"
 import { AuthUser } from "@/modules/auth/domain/types"
+import "../domain/policies"
 
 export const ProductsService = {
-  async getProducts(search?: string, limit?: number) {
+  async getProducts(search?: string, limit?: number, user?: AuthUser) {
+    if (user) {
+      if (!can(user, "products:read")) {
+        throw new Error("Forbidden")
+      }
+    }
     return ProductsRepository.findMany(search, limit)
   },
 
-  async getProductById(id: string) {
+  async getProductById(id: string, user?: AuthUser) {
+    if (user) {
+      if (!can(user, "products:read")) {
+        throw new Error("Forbidden")
+      }
+    }
     const product = await ProductsRepository.findById(id)
     if (!product) throw new Error("Product not found")
     return product

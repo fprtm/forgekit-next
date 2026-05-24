@@ -192,3 +192,10 @@ export function can(
 
   return true;
 }
+
+// =========================================================================
+// 5. Plug & Play Module-specific Custom Policies Registry
+// =========================================================================
+// Register external domain validators dynamically to keep Auth engine decoupled.
+
+

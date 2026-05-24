@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { can } from "../policies";
+import { can, authPolicies } from "../policies";
 import { AuthUser } from "../types";
+import "@/modules/products/domain/policies";
 
 describe("Domain Policy Authorization Tests", () => {
   
@@ -93,11 +94,31 @@ describe("Domain Policy Authorization Tests", () => {
     const standardUser: AuthUser = { id: "user-1", role: "user" };
 
     it("should throw a descriptive error when resource context lacks standard ownership keys and no validator is registered", () => {
-      const invalidProductContext = { id: "prod-1", title: "Missing Ownership Fields" };
+      // 1. Temporarily register mock permission to pass RBAC step
+      authPolicies.setPermissions({
+        user: ["mock:update"]
+      });
+
+      const invalidContext = { id: "doc-1", title: "Missing Ownership Fields" };
       
       expect(() => {
-        can(standardUser, "products:update", invalidProductContext);
+        can(standardUser, "mock:update", invalidContext);
       }).toThrow("[Authorization Failure - Fail-Fast Registry]");
+
+      // 2. Restore standard permissions
+      authPolicies.setPermissions({
+        super_admin: [
+          "users:read", "users:update", "users:create", "users:delete",
+          "products:create", "products:read", "products:update", "products:delete",
+        ],
+        admin: [
+          "users:read",
+          "products:create", "products:read", "products:update", "products:delete",
+        ],
+        user: [
+          "products:read", "products:create", "products:update", "products:delete",
+        ],
+      });
     });
   });
 });
