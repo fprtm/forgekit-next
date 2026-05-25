@@ -1,4 +1,4 @@
-import { UserRole } from "@/modules/users/domain/types";
+import { UserRole } from "@/config/roles";
 
 export type Action = 
   | 'users:create' | 'users:read' | 'users:update' | 'users:delete'
@@ -6,7 +6,7 @@ export type Action =
 
 export interface AuthUser {
   id: string;
-  role: UserRole | string;
+  role: UserRole;
   name?: string | null;
   email?: string | null;
 }

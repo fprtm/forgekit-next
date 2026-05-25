@@ -1,5 +1,5 @@
-export const UserRole = ["super_admin", "admin", "user"] as const;
-export type UserRole = (typeof UserRole)[number];
+import { UserRole } from "@/config/roles"
+
 
 export interface UserEntity {
   id: string

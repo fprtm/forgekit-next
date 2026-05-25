@@ -1,3 +1,5 @@
+
+import { UserRole } from "@/config/roles";
 import { Action, AuthUser, ResourceContext } from "./types";
 
 // =========================================================================
@@ -8,37 +10,38 @@ import { Action, AuthUser, ResourceContext } from "./types";
  * Centrally managed permissions map.
  * Can be configured dynamically or loaded from an external config/database.
  */
-let ROLE_PERMISSIONS: Record<string, string[]> = {
-  super_admin: [
+let ROLE_PERMISSIONS: Record<UserRole, string[]> = {
+  therapist: [
     "users:read",
-    "users:update",
-    "users:create",
-    "users:delete",
-    "products:create",
     "products:read",
     "products:update",
     "products:delete",
+    "appointments:create",
+    "appointments:read",
+    "appointments:update",
+    "appointments:delete",
+    "consultation:read",
+    "consultation:update",
   ],
-  admin: [
-    "users:read",
-    "products:create",
-    "products:read",
-    "products:update",
-    "products:delete",
+  patient: [
+    "services:read",
+    "schedules:read",
+    "appointments:create",
+    "appointments:read",
+    "appointments:update",
+    "appointments:delete",
+    "consultation:read",
   ],
-  user: [
-    "products:read",
-    "products:create",
-    "products:update",
-    "products:delete",
-  ],
+  super_admin: ["**"],
+  admin: ["**"],
+  guest: []
 };
 
 /**
  * Roles that automatically bypass all resource ownership checks (Super Admins).
  * Completely configurable to support roles like 'super_admin', 'operator', etc.
  */
-let SUPER_ROLES: string[] = ["super_admin"];
+let SUPER_ROLES: UserRole[] = ["super_admin"];
 
 // =========================================================================
 // 2. Extensible Resource Validator Registry (DDD-Aligned & Modular)
@@ -60,14 +63,14 @@ export const authPolicies = {
   /**
    * Configures the roles to permissions map dynamically.
    */
-  setPermissions(permissions: Record<string, string[]>) {
+  setPermissions(permissions: Record<UserRole, string[]>) {
     ROLE_PERMISSIONS = { ...permissions };
   },
 
   /**
    * Configures roles that bypass resource ownership checks.
    */
-  setSuperRoles(roles: string[]) {
+  setSuperRoles(roles: UserRole[]) {
     SUPER_ROLES = [...roles];
   },
 
