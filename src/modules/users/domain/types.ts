@@ -11,3 +11,5 @@ export interface UserEntity {
   createdAt: Date
   updatedAt: Date
 }
+export { UserRole }
+

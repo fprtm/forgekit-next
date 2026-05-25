@@ -3,7 +3,7 @@ import NextAuth, { Session, User } from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import authConfig from "@/config/auth";
 import { db } from "@/db";
-import { UserRole } from "@/modules/users/domain/types";
+import { UserRole } from "@/config/roles";
 import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { AuthService } from "@/modules/auth/application/services";
