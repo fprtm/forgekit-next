@@ -1,13 +1,13 @@
-export class UserNotFoundException extends Error {
+import { DomainException } from "@/shared/domain/exceptions/domain.exception";
+
+export class UserNotFoundException extends DomainException {
   constructor(idOrEmail: string) {
-    super(`User with identifier ${idOrEmail} was not found.`);
-    this.name = "UserNotFoundException";
+    super(`User with identifier ${idOrEmail} was not found.`, "USER_NOT_FOUND", 404);
   }
 }
 
-export class InvalidRoleException extends Error {
+export class InvalidRoleException extends DomainException {
   constructor(role: string) {
-    super(`The role '${role}' is not valid or unauthorized.`);
-    this.name = "InvalidRoleException";
+    super(`The role '${role}' is not valid or unauthorized.`, "INVALID_ROLE", 400);
   }
 }

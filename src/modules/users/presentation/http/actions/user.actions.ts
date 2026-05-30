@@ -14,7 +14,7 @@ import { CreateUserCommand } from "../../../application/use-cases/create-user/cr
 import { UpdateProfileCommand } from "../../../application/use-cases/update-profile/update-profile.command"
 import { RegisterUserCommand } from "../../../application/use-cases/register-user/register-user.command"
 
-import { logActivityUC } from "@/modules/audit-logs/presentation/http/actions/audit-log.actions"
+import { DomainException } from "@/shared/domain/exceptions/domain.exception"
 
 type ActionResult<T> =
   | { success: true; data: T; error: null }
@@ -35,8 +35,11 @@ export async function getUsersAction(): Promise<ActionResult<UserEntity[]>> {
     const users = await getUsersUC.execute({ currentUser: session?.user })
     return { success: true, data: users, error: null }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error"
-    return { success: false, error: message, data: null }
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("GET USERS ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }
 
@@ -46,8 +49,11 @@ export async function getUserAction(id: string): Promise<ActionResult<UserEntity
     const user = await getUserProfileUC.execute({ id, currentUser: session?.user })
     return { success: true, data: user, error: null }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error"
-    return { success: false, error: message, data: null }
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("GET USER ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }
 
@@ -60,8 +66,11 @@ export async function getCurrentUser(): Promise<ActionResult<UserEntity>> {
     const user = await getUserProfileUC.execute({ id: session.user.id, currentUser: session.user })
     return { success: true, data: user, error: null }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error"
-    return { success: false, error: message, data: null }
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("GET CURRENT USER ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }
 
@@ -76,16 +85,13 @@ export async function updateUser(
   const targetId = id || session.user.id
   try {
     const updated = await updateProfileUC.execute({ id: targetId, ...input, currentUser: session.user })
-    // Auditing activity
-    await logActivityUC.execute({
-      userId: session.user.id,
-      action: "user:update",
-      details: `User profile updated: id=${targetId} (Name: ${updated.name}, Role: ${updated.role})`,
-    })
     return { success: true, data: updated, error: null }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error"
-    return { success: false, error: message, data: null }
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("UPDATE USER ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }
 
@@ -93,16 +99,13 @@ export async function deleteUserAction(id: string): Promise<ActionResult<UserEnt
   const session = await auth()
   try {
     const deleted = await deleteUserUC.execute({ id, currentUser: session?.user })
-    // Auditing activity
-    await logActivityUC.execute({
-      userId: session?.user?.id || null,
-      action: "user:delete",
-      details: `User deleted: id=${id} (Email: ${deleted.email}, Role: ${deleted.role})`,
-    })
     return { success: true, data: deleted, error: null }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error"
-    return { success: false, error: message, data: null }
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("DELETE USER ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }
 
@@ -112,14 +115,12 @@ export async function createUserAction(
   const session = await auth()
   try {
     const user = await createUserUC.execute({ ...input, currentUser: session?.user })
-    // Auditing activity
-    await logActivityUC.execute({
-      userId: session?.user?.id || null,
-      action: "user:create",
-      details: `User created: id=${user.id} (Email: ${user.email}, Role: ${user.role})`,
-    })
     return { success: true, data: user, error: null }
   } catch (error: unknown) {
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("CREATE USER ERROR:", error)
     const message = error instanceof Error ? error.message : "Internal error"
     return { success: false, error: message, data: null }
   }
@@ -130,12 +131,6 @@ export async function registerUserAction(
 ): Promise<ActionResult<Omit<UserEntity, "password" | "emailVerified">>> {
   try {
     const user = await registerUserUC.execute(input)
-    // Auditing activity
-    await logActivityUC.execute({
-      userId: user.id,
-      action: "user:register",
-      details: `User registered: id=${user.id} (Email: ${user.email}, Role: ${user.role})`,
-    })
     return { 
       success: true, 
       data: {
@@ -150,6 +145,10 @@ export async function registerUserAction(
       error: null 
     }
   } catch (error: unknown) {
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("REGISTER USER ERROR:", error)
     const message = error instanceof Error ? error.message : "Internal error"
     return { success: false, error: message, data: null }
   }
