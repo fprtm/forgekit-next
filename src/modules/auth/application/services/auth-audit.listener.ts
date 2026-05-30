@@ -1,5 +1,6 @@
 import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
 import { UserLoggedInEvent, UserLoggedOutEvent } from "@/modules/auth/domain/events/auth.events";
+import { UserImpersonatedEvent, UserImpersonationStoppedEvent } from "@/modules/auth/domain/events/impersonate.events";
 import { LogActionHandler } from "@/modules/audit-logs/application/use-cases/log-action/log-action.handler";
 import { DrizzleAuditLogRepository } from "@/modules/audit-logs/infrastructure/repositories/drizzle-impl/drizzle-audit-log.repository";
 
@@ -23,6 +24,24 @@ export class AuthAuditListener {
         entityName: "Auth",
         actorId: event.userId,
         details: `User logged out`,
+      }).catch(console.error);
+    });
+
+    eventDispatcher.register<UserImpersonatedEvent>("UserImpersonatedEvent", async (event) => {
+      await logActionUC.execute({
+        action: "CREATE",
+        entityName: "Auth",
+        actorId: event.superAdminId,
+        details: `Superadmin started impersonating User: ${event.targetUserId}`,
+      }).catch(console.error);
+    });
+
+    eventDispatcher.register<UserImpersonationStoppedEvent>("UserImpersonationStoppedEvent", async (event) => {
+      await logActionUC.execute({
+        action: "UPDATE",
+        entityName: "Auth",
+        actorId: event.superAdminId,
+        details: `Superadmin stopped impersonating User: ${event.targetUserId}`,
       }).catch(console.error);
     });
   }

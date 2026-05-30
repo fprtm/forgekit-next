@@ -765,7 +765,7 @@ bun dev
 Sebagai repositori skala enterprise, boilerplate ini telah berevolusi dari struktur Next.js tradisional ke **Modular Clean Architecture (Domain-Driven Design)** di bawah direktori `src/modules/`. Pemisahan ini memastikan kode fungsional bisnis terisolasi sempurna dan siap dikembangkan tanpa batas oleh banyak tim sekaligus.
 
 ### A. Anatomi 4-Layer Taxonomy per Modul
-Setiap modul baru (misal: `products`, `users`, `orders`) wajib mematuhi struktur folder 4-Layer berikut:
+Setiap modul baru (misal: `products`, `users`, `notifications`) wajib mematuhi struktur folder 4-Layer berikut:
 
 ```text
 src/modules/<module-name>/
@@ -790,17 +790,33 @@ src/modules/<module-name>/
 ```
 
 ### B. Aturan Emas Arsitektur (Architecture Guardrails)
-1. **The Dependency Rule**: Aliran dependensi wajib mengarah ke dalam (`domain`). Layer core (`domain`) tidak boleh mengimpor apa pun dari layer luar.
-2. **Thin Next.js App Router**: Direktori `src/app/` dilarang keras mengandung logika bisnis. File router Next.js hanya bertindak sebagai *Thin Router* yang memetakan URL langsung ke halaman React di `presentation/ui/pages/`.
-3. **Deep UI Separation**: UI kompleks (seperti form validasi interaktif dan tabel dinamis) wajib diletakkan di dalam folder `components/` milik modul masing-masing untuk menjaga kerapian kode.
+Setiap kontributor atau agen AI wajib mematuhi aturan arsitektur mutlak berikut tanpa pengecualian:
+
+1. **Zero Business Logic in App Router**: Berkas di dalam `src/app/` murni bertindak sebagai *Thin Delivery Mechanism*. Berkas tersebut HANYA boleh memetakan URL ke handler (`presentation/http/controllers` atau server `actions`). DILARANG keras melakukan kueri database (Drizzle) atau menulis aturan bisnis di dalam `src/app/`.
+2. **Inward Dependency Rule**: Arah ketergantungan wajib mengarah ke dalam: `Presentation -> Application -> Domain`. Layer `Domain` wajib bersih dan memiliki **ZERO external dependencies** (dilarang mengimpor UI, database, library pihak ketiga, atau framework).
+3. **Sub-folder Granularity**: Wajib memanfaatkan folder struktur secara detail dan granuler (`domain/events`, `domain/exceptions`, `presentation/http/controllers`, dsb.). Dilarang mengosongkan folder tersebut atau melakukan *mocking* tidak perlu.
+4. **Domain Exceptions & Stack Trace Protection**:
+   * DILARANG keras melempar kelas `Error` generik di dalam Use Case. Seluruh kegagalan logika bisnis wajib melempar *class* khusus turunan dari **`DomainException`** yang berada di dalam `domain/exceptions/`.
+   * Server Actions dan Controllers wajib menangkap `DomainException` untuk mengembalikan pesan error yang aman bagi klien, sedangkan error internal generik wajib disamarkan sebagai `"Internal Server Error"` dan dicatat di log server untuk perlindungan *stack trace*.
+5. **IDOR & AuthZ**: Setiap tindakan modifikasi/penghapusan data di Server Action atau Use Case wajib memvalidasi izin hak akses pengguna (menggunakan `can()` dari engine kebijakan *policies*) dan memverifikasi kepemilikan data (*ownership*).
+6. **No Manual Side-Effects in Use Cases/Actions**: Tindakan bisnis sekunder (seperti mencatat log audit, mengirim email, atau push notifikasi) DILARANG keras dieksekusi secara manual/langsung di dalam Server Actions atau jalur Use Case primer.
+7. **Event-Driven Side Effects (EDA)**: Aksi sekunder wajib dipicu menggunakan event domain asinkronus (`DomainEvent`) melalui `eventDispatcher.dispatch()`, dan diproses secara terpisah oleh *dedicated listeners* (seperti `AuditLogListener` atau `NotificationListener`) di bawah layer `application/services`.
 
 ### C. Daftar Modul Aktif Saat Ini
 1. **Products (`src/modules/products`)**:
    - Mengelola katalog produk lengkap dengan form pembuatan, edit harga, validasi, dan alur hapus otomatis.
 2. **Users (`src/modules/users`)**:
    - Mengelola data profil pengguna dan sistem administrasi pengguna (manajemen Nama, Email, dan Role Admin/User).
-3. **Orders (`src/modules/orders`)**:
-   - Modul skeleton terstruktur untuk menampung alur transaksi pemesanan di masa depan.
+3. **Notifications (`src/modules/notifications`)**:
+   - Sistem riwayat & preferensi notifikasi berlapis (konfigurasi sistem global + preferensi per-user) yang beroperasi asinkronus menggunakan Event-Driven Architecture.
+4. **Audit Logs (`src/modules/audit-logs`)**:
+   - Mengelola perekaman asinkronus aktivitas log sistem tingkat *enterprise* untuk seluruh tindakan sensitif aktor (DevSecOps compliant).
+5. **Auth (`src/modules/auth`)**:
+   - Pusat sistem autentikasi, pendaftaran, Edge-safe middleware, otorisasi Policies, serta fitur impersonasi Superadmin.
+6. **Setting (`src/modules/setting`)**:
+   - Mengelola seluruh konfigurasi global tingkat aplikasi/bisnis (kredensial API, data bisnis, timezone, dan preferensi modul asinkronus).
+7. **Dashboard (`src/modules/dashboard`)**:
+   - Kerangka UI dasbor utama untuk penyajian metrik data bisnis ringkas pengguna.
 
 ---
 
@@ -935,3 +951,26 @@ ForgeKit menyertakan mesin seeding basis data sentral (`scripts/seed.ts`) yang s
   ```bash
   bun run db:seed --module users
   ```
+
+---
+
+## 17. Fitur Superadmin Impersonate (Login As)
+
+ForgeKit mendukung fitur impersonasi identitas bagi `super_admin` untuk masuk sementara sebagai akun pengguna lain.
+
+### Karakteristik & Alur Kerja Keamanan:
+1. **Validasi Domain Policy**: Kebijakan `"impersonate"` dibatasi ketat di tingkat *policy engine* (`policies.ts`) hanya untuk role `super_admin`.
+2. **NextAuth Intercept**: Berkas `src/shared/lib/auth.ts` memproses cookie asinkronus `impersonate_target` untuk bertukar sesi identitas pengguna secara sementara.
+3. **Identitas Asli Aman**: Sesi superadmin asli yang memicu impersonasi tersimpan di dalam field `originalUserId` & `originalUserRole` untuk memfasilitasi pemulihan sesi superadmin secara instan via endpoint `/api/auth/stop-impersonation`.
+4. **Audit Logs & Keamanan Compliance**: Setiap aktivitas impersonasi dicatat ke dalam **Audit Logs** menggunakan `auth-audit.listener.ts`.
+
+---
+
+## 18. Sistem Notifikasi Dinamis (Global & User Preferences)
+
+Sistem notifikasi diimplementasikan di `src/modules/notifications` dengan membagi pengaturan menjadi dua lapisan fungsional:
+
+1. **Konfigurasi Global (Sistem)**: Menggunakan tabel `settings` utama untuk mengontrol hidup/mati saluran notifikasi (email, push, whatsapp) secara global. Kredensial SMTP atau Fonnte disimpan di sini.
+2. **Preferensi Pengguna (User Settings)**: Menggunakan tabel `user_notification_settings` agar setiap pengguna dapat memilih apakah ingin menerima email, push, atau WhatsApp secara mandiri.
+3. **Arsitektur Filter Use-Case**: Pengiriman pesan (`SendNotificationHandler`) hanya mengeksekusi saluran apabila diaktifkan di tingkat global *dan* disetujui di tingkat preferensi pengguna.
+

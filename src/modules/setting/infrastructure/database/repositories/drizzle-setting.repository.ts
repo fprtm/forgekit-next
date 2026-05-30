@@ -18,6 +18,8 @@ const KEY_TO_CATEGORY: Record<SettingKey, SettingCategory> = {
   timezone: "general",
   therapist_assignment: "general",
   fonnte_credentials: "general",
+  notification_channels: "notification",
+  email_gateway: "notification",
 };
 
 const CATEGORY_TO_KEYS: Record<SettingCategory, SettingKey[]> = {
@@ -25,6 +27,7 @@ const CATEGORY_TO_KEYS: Record<SettingCategory, SettingKey[]> = {
   policy: ["cancellation"],
   business: ["business_name"],
   general: ["timezone", "therapist_assignment", "fonnte_credentials"],
+  notification: ["notification_channels", "email_gateway"],
 };
 
 function mapToDomain<K extends SettingKey>(

@@ -1,4 +1,4 @@
-export type SettingCategory = "payment" | "business" | "policy" | "general";
+export type SettingCategory = "payment" | "business" | "policy" | "general" | "notification";
 
 export type DepositSetting = {
   type: "flat" | "percentage";
@@ -40,6 +40,19 @@ export type FonnteCredentialsSetting = {
   deviceId?: string;
 };
 
+export type NotificationChannelsSetting = {
+  email: boolean;
+  push: boolean;
+  whatsapp: boolean;
+};
+
+export type EmailGatewaySetting = {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+};
+
 export type SettingsValueMap = {
   deposit: DepositSetting;
   payment_method: PaymentMethodSetting;
@@ -51,6 +64,8 @@ export type SettingsValueMap = {
   therapist_assignment: TherapistAssignmentSetting;
   midtrans_credentials: MidtransCredentialsSetting;
   fonnte_credentials: FonnteCredentialsSetting;
+  notification_channels: NotificationChannelsSetting;
+  email_gateway: EmailGatewaySetting;
 };
 export type SettingKey = keyof SettingsValueMap;
 

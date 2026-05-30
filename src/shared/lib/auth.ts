@@ -15,57 +15,99 @@ const passwordHasher = new BcryptPasswordHasher();
 const validateCredentialsUC = new ValidateCredentialsHandler(userRepo, passwordHasher);
 
 const nextAuthResult = NextAuth({
-    ...authConfig,
-    adapter: DrizzleAdapter(db),
-    session:{strategy:"jwt"},
-    providers: [
-      ...authConfig.providers,
-      Credentials({
-        name: "Credentials",
-        credentials: {
-          email: { label: "Email", type: "email" },
-          password: { label: "Password", type: "password" }
-        },
-        async authorize(credentials) {
-          if (!credentials?.email || !credentials?.password) {
-            return null;
-          }
-
-          const user = await validateCredentialsUC.execute({
-            email: credentials.email as string,
-            password: credentials.password as string,
-          });
-
-          if (!user) {
-            return null;
-          }
-
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          };
+  ...authConfig,
+  adapter: DrizzleAdapter(db),
+  session: { strategy: "jwt" },
+  providers: [
+    ...authConfig.providers,
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
-      })
-    ],
-    callbacks: {
-    jwt({ token, user } : {token: JWT, user:User}) {
+
+        const user = await validateCredentialsUC.execute({
+          email: credentials.email as string,
+          password: credentials.password as string,
+        });
+
+        if (!user) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+      }
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }: { token: JWT, user: User }) {
       if (user) {
         token.id = user.id
         token.role = user.role as UserRole
       }
+
+      try {
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const impersonateTarget = cookieStore.get("impersonate_target")?.value;
+
+        const currentRole = (token.originalUserRole as UserRole) || (token.role as UserRole);
+        if (impersonateTarget && currentRole === "super_admin") {
+          const targetUser = await userRepo.findById(impersonateTarget);
+          if (targetUser) {
+            if (!token.originalUserId) {
+              token.originalUserId = token.id;
+              token.originalUserRole = token.role;
+            }
+            token.id = targetUser.id;
+            token.role = targetUser.role;
+            token.name = targetUser.name;
+            token.email = targetUser.email;
+          }
+        } else if (!impersonateTarget && token.originalUserId) {
+          token.id = token.originalUserId;
+          token.role = token.originalUserRole;
+          delete token.originalUserId;
+          delete token.originalUserRole;
+
+          const origUser = await userRepo.findById(token.id as string);
+          if (origUser) {
+            token.name = origUser.name;
+            token.email = origUser.email;
+          }
+        }
+      } catch (e) {
+        console.error("Error in NextAuth JWT callback:", e);
+      }
+
       return token
     },
-    session({ session, token } : {session: Session, token: JWT}) {
+    session({ session, token }: { session: Session, token: JWT }) {
       if (token) {
         session.user.id = token.id as string
         session.user.role = token.role as UserRole
+        if (token.originalUserId) {
+          session.user.originalUserId = token.originalUserId as string;
+          session.user.originalUserRole = token.originalUserRole as UserRole;
+        }
       }
       return session
     },
-}
+  }
 })
+
+
+
 
 export const { handlers, signIn, signOut } = nextAuthResult
 

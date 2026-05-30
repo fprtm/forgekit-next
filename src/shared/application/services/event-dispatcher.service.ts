@@ -32,3 +32,14 @@ export class EventDispatcher {
 }
 
 export const eventDispatcher = EventDispatcher.getInstance();
+
+// Dynamically import all listeners to register them on server startup while avoiding circular dependencies
+if (typeof window === "undefined") {
+  Promise.all([
+    import("@/modules/auth/application/services/auth-audit.listener"),
+    import("@/modules/audit-logs/application/services/audit-log-listener.service"),
+    import("@/modules/users/application/services/user-notification.service"),
+    import("@/modules/products/application/services/product-inventory.service"),
+    import("@/modules/notifications/application/services/notification.listener"),
+  ]).catch(console.error);
+}
