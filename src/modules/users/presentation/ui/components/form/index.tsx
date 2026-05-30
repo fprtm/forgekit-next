@@ -22,7 +22,7 @@ import { UserEntity, UserRole } from "../../../../domain/entities/user.entity"
 import { formatRole } from "@/shared/lib/utils"
 import { useUserForm } from "../../hooks/use-user-form"
 
-export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
+export function UserProfileForm({ initialData, isProfile = false }: { initialData?: UserEntity; isProfile?: boolean }) {
   const { form, onSubmit, isEditing } = useUserForm(initialData)
 
   return (
@@ -64,33 +64,35 @@ export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
         />
       </div>
 
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {UserRole.filter((role) => role !== "super_admin").map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {formatRole(role)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!isProfile && (
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {UserRole.filter((role) => role !== "super_admin").map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {formatRole(role)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update User" : "Create User"}
+          {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update Profile" : "Create User"}
         </Button>
       </form>
     </Form>

@@ -19,7 +19,7 @@ export function ProductListPage({
         <h1 className="text-3xl font-bold tracking-tight">Products</h1>
         <PermissionGate action="products:create" user={currentUser}>
           <Button asChild>
-            <Link href="/products/create">Create Product</Link>
+            <Link href="/d/products/create">Create Product</Link>
           </Button>
         </PermissionGate>
       </div>

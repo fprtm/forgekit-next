@@ -1,25 +1,13 @@
 "use client"
 
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  ColumnDef,
-} from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table"
+import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
 import { ProductEntity } from "../../../../domain/entities/product.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
 import { useProductTable } from "../../hooks/use-product-table"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
+import { DataTable } from "@/shared/components/data-table/data-table"
 import "@/modules/products/domain/policies";
 
 export function ProductTable({
@@ -60,7 +48,7 @@ export function ProductTable({
               resource={{id: product.id}}
             >
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/products/${product.id}/edit`} data-testid={`edit-button-${product.id}`}>Edit</Link>
+                <Link href={`/d/products/${product.id}/edit`} data-testid={`edit-button-${product.id}`}>Edit</Link>
               </Button>
             </PermissionGate>
             <PermissionGate
@@ -84,57 +72,7 @@ export function ProductTable({
     },
   ]
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable columns={columns} data={data} searchKey="name" />
   )
 }

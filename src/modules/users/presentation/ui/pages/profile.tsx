@@ -1,8 +1,9 @@
 import * as React from "react"
 import { UserProfileForm } from "../components/form"
+import { UserEntity } from "../../../domain/entities/user.entity"
 import Wrapper from "@/shared/components/layout/wrapper"
 
-export function UserProfilePage() {
+export function UserProfilePage({ user }: { user: UserEntity }) {
   return (
     <Wrapper>
       <div className="flex items-center justify-between">
@@ -11,7 +12,7 @@ export function UserProfilePage() {
       
       <div className="bg-white p-6 border rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Edit Information</h2>
-        <UserProfileForm />
+        <UserProfileForm initialData={user} isProfile={true} />
       </div>
     </Wrapper>
   )

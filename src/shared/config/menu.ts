@@ -50,6 +50,10 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
         label: "Create User", 
         requiredAction: "users:create" 
       },
+      {
+        href: "/d/profile",
+        label: "Account",
+      },
     ],
   },
   { 

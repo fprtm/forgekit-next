@@ -9,7 +9,7 @@ export function ProductEditPage({ product }: { product: ProductEntity }) {
     <Wrapper>
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild>
-          <Link href="/products">← Back</Link>
+          <Link href="/d/products">← Back</Link>
         </Button>
         <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
       </div>

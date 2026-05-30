@@ -32,7 +32,11 @@ export function useUserForm(initialData?: UserEntity) {
 
     if (res.success) {
       toast.success(isEditing ? "User updated successfully!" : "User created successfully!")
-      router.push("/users")
+      if (typeof window !== "undefined" && window.location.pathname === "/d/profile") {
+        router.refresh()
+      } else {
+        router.push("/d/users")
+      }
     } else {
       toast.error(res.error)
     }

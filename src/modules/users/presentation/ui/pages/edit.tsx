@@ -10,7 +10,7 @@ export function UserEditPage({ user }: { user: UserEntity }) {
     <Wrapper>
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild>
-          <Link href="/users">← Back</Link>
+          <Link href="/d/users">← Back</Link>
         </Button>
         <h1 className="text-3xl font-bold tracking-tight">Edit User</h1>
       </div>

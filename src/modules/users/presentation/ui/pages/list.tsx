@@ -20,11 +20,11 @@ export function UserListPage({
         <h1 className="text-3xl font-bold tracking-tight">Users</h1>
         <PermissionGate action="users:create" user={currentUser}>
           <Button asChild>
-            <Link href="/users/create">Create User</Link>
+            <Link href="/d/users/create">Create User</Link>
           </Button>
         </PermissionGate>
       </div>
-      
+
       <div className="bg-white p-6 border rounded-lg shadow-sm">
         <UserTable data={users} currentUser={currentUser} />
       </div>
