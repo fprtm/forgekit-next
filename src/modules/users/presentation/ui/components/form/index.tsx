@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import {
   Form,
   FormControl,
@@ -9,18 +9,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/shared/components/ui/form"
+import { Input } from "@/shared/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { UserEntity, UserRole } from "../../../../domain/types"
-import { formatRole } from "@/lib/utils"
-import { useUserForm } from "./use-user-form"
+} from "@/shared/components/ui/select"
+import { UserEntity, UserRole } from "../../../../domain/entities/user.entity"
+import { formatRole } from "@/shared/lib/utils"
+import { useUserForm } from "../../hooks/use-user-form"
 
 export function UserProfileForm({ initialData }: { initialData?: UserEntity }) {
   const { form, onSubmit, isEditing } = useUserForm(initialData)

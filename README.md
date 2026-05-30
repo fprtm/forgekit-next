@@ -22,27 +22,45 @@ ForgeKit strictly enforces a modular 4-Layer DDD architecture. Every feature (e.
 src/
 ├── app/                  # Thin App Router (Entry points only)
 └── modules/
-    └── [module-name]/    # E.g., products, users
-        ├── domain/       # Layer 1: Core Business Entities & Types (No frameworks)
-        ├── application/  # Layer 2: Business Logic, Services & Validations (Zod)
-        ├── infrastructure/# Layer 3: Database Schemas, Repositories (Drizzle)
-        └── presentation/ # Layer 4: UI Components, Pages, and Server Actions
+    └── [bounded-context]/# E.g., products, users, audit-logs
+        ├── domain/       
+        │   ├── entities/        # Core Business Entities & Types (No frameworks)
+        │   ├── exceptions/      # Custom domain exceptions (e.g. UserNotFoundException)
+        │   ├── repositories/    # Interfaces for data access ports
+        │   └── value-objects/   # Domain Value Objects
+        ├── application/  
+        │   └── use-cases/       # Business Logic Handlers & Command DTOs (Zod)
+        ├── infrastructure/
+        │   ├── database/drizzle/# DB Schemas & Migrations
+        │   ├── repositories/    # Drizzle Repositories Adapters
+        │   └── services/        # External services adapters (e.g. Bcrypt hasher)
+        └── presentation/ 
+            ├── http/actions/    # Next.js Server Actions (Use Case entry points)
+            └── ui/              # UI Components, Pages, and Hooks
 ```
 
 ### 1. Domain Layer (`domain/`)
-The core of the module. It contains pure TypeScript interfaces and entities (e.g., `ProductEntity`, `UserEntity`). **Rule**: It must NOT depend on any other layer or external framework.
+The absolute core of the module. It contains pure TypeScript entities (e.g., `UserEntity`), Custom Exceptions, and Port Interfaces (e.g. `IUserRepository`). **Rule**: It must NOT depend on any other layer or external framework.
 
 ### 2. Application Layer (`application/`)
-Contains business logic orchestration (Services) and Data Transfer Object validations (Zod schemas). **Rule**: It dictates *what* happens, not *how* data is fetched or displayed.
+Contains business logic orchestration strictly separated into isolated **Use Cases** (e.g., `register-user.handler.ts`) and Data Transfer Object validations (Zod schemas). **Rule**: It dictates *what* happens, not *how* data is fetched or displayed.
 
 ### 3. Infrastructure Layer (`infrastructure/`)
-Handles all external communications, specifically the Database. Contains Drizzle ORM schemas and Repositories. **Rule**: This is the ONLY layer that communicates with the database.
+Handles all external communications, specifically the Database. Contains Drizzle ORM schemas and Repositories Adapters that implement Domain Ports. **Rule**: This is the ONLY layer that communicates with external systems.
 
 ### 4. Presentation Layer (`presentation/`)
 Contains everything the user interacts with. 
 - `ui/pages/`: Page assemblies.
-- `ui/components/`: Reusable components (Forms, Tables). Uses custom hooks (`useProductForm`, `useProductTable`) to keep JSX clean from business logic.
-- `ui/actions.ts`: Next.js Server Actions. Acts as the strictly-typed bridge between the UI and the Application Layer.
+- `ui/components/`: Reusable components (Forms, Tables).
+- `http/actions/`: Next.js Server Actions. Acts as the strictly-typed bridge between the UI and the Application Layer.
+
+---
+
+## 🔒 DevSecOps & Security Enforcement
+ForgeKit implements strict "secure-by-default" patterns:
+- **Centralized Audit Logging**: The `audit-logs` module captures critical system activities.
+- **Strict Role Guards**: Administrative use cases strictly validate roles (e.g. checking for `super_admin`) at the Application layer, preventing privilege escalation.
+- **Abstraction Over Crypto**: Cryptographic operations (like password hashing) are decoupled via Ports (e.g., `IPasswordHasher`) to prevent logic leak.
 
 ---
 
@@ -158,13 +176,14 @@ npx playwright show-report tests/playwright-report
 When adding a new feature (e.g., `Invoices`), copy the structure of an existing robust module like `products`.
 
 1. Create `src/modules/invoices/`.
-2. Define `InvoiceEntity` in `domain/types.ts`.
-3. Create `schema.ts` and `repository.ts` in `infrastructure/`.
-4. Create `validations.ts` (Zod) and `services.ts` in `application/`.
-5. Create `actions.ts` in `presentation/ui/`.
-6. Build Headless UI hooks (`useInvoiceTable`, `useInvoiceForm`) and components in `presentation/ui/components/`.
-7. Assemble `list.tsx`, `create.tsx`, `edit.tsx` in `presentation/ui/pages/`.
-8. Wire up the routes inside `src/app/(dashboard)/invoices/`.
+2. Define `InvoiceEntity` and `IInvoiceRepository` in `domain/entities/` and `domain/repositories/`.
+3. Create custom exceptions like `InvoiceNotFoundException` in `domain/exceptions/`.
+4. Create Drizzle `schema.ts` in `infrastructure/database/drizzle/`.
+5. Implement the repository adapter in `infrastructure/repositories/drizzle-impl/`.
+6. Create Use Cases (e.g., `create-invoice.handler.ts` and `create-invoice.command.ts`) in `application/use-cases/create-invoice/`.
+7. Expose Server Actions in `presentation/http/actions/invoice.actions.ts`.
+8. Build Headless UI hooks and components in `presentation/ui/`.
+9. Assemble UI Pages in `presentation/ui/pages/` and route them in `src/app/(dashboard)/invoices/`.
 
 ---
 

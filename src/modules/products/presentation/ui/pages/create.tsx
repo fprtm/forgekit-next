@@ -1,7 +1,7 @@
 import { ProductForm } from "../components/form"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import Wrapper from "@/components/layout/wrapper"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function ProductCreatePage() {
   return (

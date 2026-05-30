@@ -1,6 +1,6 @@
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as bcrypt from "bcrypt";
-import { users } from "./schema";
+import { BcryptPasswordHasher } from "@/modules/auth/infrastructure/services/bcrypt-password-hasher";
+import { users } from "./database/drizzle/schema";
 
 /**
  * Modular seeder for the Users module.
@@ -14,7 +14,7 @@ import { users } from "./schema";
 export async function seed(db: NodePgDatabase) {
   console.log("👥 [Users] Seeding test database users...");
 
-  const saltRounds = 10;
+  const passwordHasher = new BcryptPasswordHasher();
 
   // 1. Define list of users to seed
   const seedUsers = [
@@ -60,7 +60,7 @@ export async function seed(db: NodePgDatabase) {
   ];
 
   for (const item of seedUsers) {
-    const hashedPassword = await bcrypt.hash(item.password, saltRounds);
+    const hashedPassword = await passwordHasher.hash(item.password);
 
     await db
       .insert(users)

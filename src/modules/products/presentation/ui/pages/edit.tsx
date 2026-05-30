@@ -1,8 +1,8 @@
 import { ProductForm } from "../components/form"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { ProductEntity } from "../../../domain/types"
-import Wrapper from "@/components/layout/wrapper"
+import { ProductEntity } from "../../../domain/entities/product.entity"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function ProductEditPage({ product }: { product: ProductEntity }) {
   return (

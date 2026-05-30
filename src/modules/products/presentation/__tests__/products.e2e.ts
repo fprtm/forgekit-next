@@ -7,7 +7,7 @@
  * @module Products/Presentation/Tests/E2E
  */
 
-import { waitForTyping } from "@/lib/utils";
+import { waitForTyping } from "@/shared/lib/utils";
 import { test, expect } from "@playwright/test";
 import { createProductFixture } from "./product.factory";
 

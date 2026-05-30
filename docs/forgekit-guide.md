@@ -136,43 +136,37 @@ src/
 │   │           └── route.ts
 │   ├── layout.tsx
 │   └── page.tsx
-├── actions/
-│   ├── auth.ts
-│   └── user.ts
-├── components/
-│   ├── ui/             # Shadcn — jangan modif manual
-│   ├── shared/
-│   │   ├── navbar.tsx
-│   │   └── sidebar.tsx
-│   └── forms/
-│       └── login-form.tsx
 ├── db/
 │   ├── schema/
 │   │   ├── index.ts
 │   │   └── user.ts
 │   ├── migrations/
 │   └── index.ts
-├── lib/
-│   ├── auth.ts
-│   ├── db.ts
-│   ├── utils.ts
-│   └── validations/
-│       └── user.ts
-├── hooks/
-│   └── use-user.ts
-├── types/
-│   └── index.ts
-├── config/
-│   └── site.ts
+├── shared/
+│   ├── components/
+│   │   ├── ui/             # Shadcn UI (e.g., button, input)
+│   │   ├── data-table/     # Reusable TanStack Table components
+│   │   └── layout/         # Dashboard layout, App Sidebar
+│   ├── lib/
+│   │   ├── utils.ts        # Helper functions (cn, formatRole, etc.)
+│   │   ├── auth.ts         # NextAuth v5 server instance
+│   │   └── api-response.ts # Standard API Response helpers
+│   ├── config/
+│   │   ├── auth.ts         # Edge-compatible OAuth providers config
+│   │   ├── env.ts          # Type-safe environment variables
+│   │   └── site.ts         # Site metadata configuration
+│   ├── constant/           # Shared enums and constant values
+│   ├── hooks/              # Shared custom hooks (e.g. use-mobile.ts)
+│   └── types/              # Shared types and NextAuth type overrides
 └── env.ts
 ```
 
 Buat folder sekaligus via terminal:
 
 ```bash
-mkdir -p src/actions src/components/shared src/components/forms
 mkdir -p src/db/schema src/db/migrations
-mkdir -p src/lib/validations src/hooks src/types src/config
+mkdir -p src/shared/components/ui src/shared/components/layout
+mkdir -p src/shared/lib src/shared/config src/shared/constant src/shared/hooks src/shared/types
 ```
 
 ---
@@ -829,7 +823,7 @@ bun run test:unit
 ### B. Standardisasi Best-Practice Pengujian yang Diterapkan
 1. **Database-Agnostic E2E**: Seluruh pengujian E2E tidak memiliki ketergantungan pada seed database statis. Alur pembuatan, penyuntingan, dan penghapusan diuji secara berurutan dalam satu sesi pengujian untuk menjamin database tetap bersih (*database hygiene*).
 2. **Global Unique Generator & Domain Factories**:
-   - Menggunakan generator global `generateUniqueString(prefix)` di `src/lib/utils.ts` untuk memastikan tidak ada data bertabrakan di database saat tes paralel dijalankan.
+    - Menggunakan generator global `generateUniqueString(prefix)` di `src/shared/lib/utils.ts` untuk memastikan tidak ada data bertabrakan di database saat tes paralel dijalankan.
    - Setiap modul memiliki Factory dinamis terisolasi (seperti `product.factory.ts` dan `user.factory.ts` di folder presentasi masing-masing) untuk merakit payload pengujian.
 3. **Human-like Interaction**: Form pengisian menggunakan `.pressSequentially()` dengan jeda waktu acak (*random delay*) dan penundaan kecepatan aksi global (`slowMo: 500` di `playwright.config.ts`) agar jalannya visualisasi browser terasa nyata.
 4. **E2E Scoping & Outer Variables**: Menghindari tabrakan strict-mode Playwright dengan memfilter locator spesifik per baris tabel (`page.locator("tr").filter({ hasText: name })`) dan mencocokkan tombol aksi via dynamic `data-testid` (misal: `edit-button-${id}`).

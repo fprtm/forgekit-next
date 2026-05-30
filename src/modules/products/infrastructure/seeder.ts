@@ -1,5 +1,5 @@
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { products } from "./schema";
+import { products } from "./database/drizzle/schema";
 
 /**
  * Modular seeder for the Products module.

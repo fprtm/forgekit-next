@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Public_Sans } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "@/shared/config/site";
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   }
 };
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/components/ui/sonner";
 
 const publicSansHeading = Public_Sans({subsets:['latin'],variable:'--font-heading'});
 

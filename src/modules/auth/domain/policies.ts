@@ -18,6 +18,8 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
     "products:read",
     "products:update",
     "products:delete",
+    "settings:read",
+    "settings:write",
   ],
   admin: [
     "users:read",
@@ -25,6 +27,8 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
     "products:read",
     "products:update",
     "products:delete",
+    "settings:read",
+    "settings:write",
   ],
   user: [
     "products:read",

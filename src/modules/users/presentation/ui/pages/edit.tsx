@@ -1,9 +1,9 @@
 import * as React from "react"
 import { UserProfileForm } from "../components/form"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { UserEntity } from "../../../domain/types"
-import Wrapper from "@/components/layout/wrapper"
+import { UserEntity } from "../../../domain/entities/user.entity"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function UserEditPage({ user }: { user: UserEntity }) {
   return (

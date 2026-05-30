@@ -1,6 +1,6 @@
 import * as React from "react"
 import { UserProfileForm } from "../components/form"
-import Wrapper from "@/components/layout/wrapper"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function UserProfilePage() {
   return (

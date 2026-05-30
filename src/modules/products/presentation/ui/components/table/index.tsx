@@ -13,12 +13,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
+} from "@/shared/components/ui/table"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { ProductEntity } from "../../../../domain/types"
+import { ProductEntity } from "../../../../domain/entities/product.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
-import { useProductTable } from "./use-product-table"
+import { useProductTable } from "../../hooks/use-product-table"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
 import "@/modules/products/domain/policies";
 

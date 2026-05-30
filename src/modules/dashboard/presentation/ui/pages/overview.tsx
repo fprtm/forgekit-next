@@ -13,12 +13,12 @@ import {
   Zap,
   Clock
 } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "@/shared/config/site";
 import { db } from "@/db";
-import { users } from "@/modules/users/infrastructure/schema";
-import { products } from "@/modules/products/infrastructure/schema";
+import { users } from "@/modules/users/infrastructure/database/drizzle/schema";
+import { products } from "@/modules/products/infrastructure/database/drizzle/schema";
 import { desc } from "drizzle-orm";
-import Wrapper from "@/components/layout/wrapper";
+import Wrapper from "@/shared/components/layout/wrapper";
 
 function formatRelativeTime(date: Date) {
   const now = new Date();

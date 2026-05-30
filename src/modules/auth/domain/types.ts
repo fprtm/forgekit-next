@@ -1,8 +1,9 @@
-import { UserRole } from "@/modules/users/domain/types";
+import { UserRole } from "@/modules/users/domain/entities/user.entity";
 
 export type Action = 
   | 'users:create' | 'users:read' | 'users:update' | 'users:delete'
-  | 'products:create' | 'products:read' | 'products:update' | 'products:delete';
+  | 'products:create' | 'products:read' | 'products:update' | 'products:delete'
+  | 'settings:read' | 'settings:write';
 
 export interface AuthUser {
   id: string;

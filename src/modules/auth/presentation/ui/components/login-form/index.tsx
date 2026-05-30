@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Form,
   FormControl,
@@ -9,10 +9,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
 import { useLoginForm } from "./use-login-form";
-import { env } from "@/config/env";
+import { env } from "@/shared/config/env";
 
 export function LoginForm() {
   const { form, onSubmit, handleGoogleSignIn, isLoading, isGoogleLoading } = useLoginForm();

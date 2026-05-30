@@ -1,10 +1,10 @@
 import { ProductTable } from "../components/table"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { ProductEntity } from "../../../domain/types"
+import { ProductEntity } from "../../../domain/entities/product.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
-import Wrapper from "@/components/layout/wrapper"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function ProductListPage({
   products,

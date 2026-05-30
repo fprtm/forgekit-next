@@ -13,14 +13,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from "@/shared/components/ui/table"
+import { Button } from "@/shared/components/ui/button"
+import { Badge } from "@/shared/components/ui/badge"
 import Link from "next/link"
-import { formatRole } from "@/lib/utils"
-import { UserEntity } from "../../../../domain/types"
+import { formatRole } from "@/shared/lib/utils"
+import { UserEntity } from "../../../../domain/entities/user.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
-import { useUserTable } from "./use-user-table"
+import { useUserTable } from "../../hooks/use-user-table"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
 
 export function UserTable({

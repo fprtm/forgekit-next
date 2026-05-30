@@ -6,7 +6,7 @@
  * @module Products/Presentation/Tests/Factory
  */
 
-import { generateUniqueString } from "@/lib/utils";
+import { generateUniqueString } from "@/shared/lib/utils";
 
 export interface ProductFixture {
   name: string;
