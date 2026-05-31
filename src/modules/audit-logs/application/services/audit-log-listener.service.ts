@@ -1,7 +1,7 @@
 import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
 import { ProductCreatedEvent, ProductUpdatedEvent, ProductDeletedEvent } from "@/modules/products/domain/events/product.events";
 import { UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent, UserRegisteredEvent } from "@/modules/users/domain/events/user.events";
-import { logActivityUC } from "@/modules/audit-logs/presentation/http/actions/audit-log.actions"; // Importing the UC instance directly to avoid rewriting its initialization. Alternatively, we should use the UC directly.
+import { logActivityUC } from "../use-cases/audit-uc";
 
 export class AuditLogListener {
   public registerListeners(): void {

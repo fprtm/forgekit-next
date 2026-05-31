@@ -117,7 +117,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
       const input = {
         name: "New Registered User",
         email: "new@example.com",
-        password: "secure-password",
+        password: "Secure@123",
       };
 
       const result = await handler.execute(input);

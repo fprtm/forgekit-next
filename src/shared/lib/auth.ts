@@ -111,11 +111,4 @@ const nextAuthResult = NextAuth({
 
 export const { handlers, signIn, signOut } = nextAuthResult
 
-export const auth = ((...args: unknown[]) => {
-  if (process.env.TEST_ENV === "playwright") {
-    return Promise.resolve({
-      user: { id: "test-user", name: "Playwright Test", email: "test@example.com", role: "super_admin" }
-    });
-  }
-  return (nextAuthResult.auth as (...args: unknown[]) => unknown)(...args);
-}) as typeof nextAuthResult.auth;
+export const auth = nextAuthResult.auth;

@@ -18,6 +18,8 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
     "products:read",
     "products:update",
     "products:delete",
+    "notifications:read",
+    "notifications:write",
     "settings:read",
     "settings:write",
     "impersonate",
@@ -28,6 +30,8 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
     "products:read",
     "products:update",
     "products:delete",
+    "notifications:read",
+    "notifications:write",
     "settings:read",
     "settings:write",
   ],
@@ -36,6 +40,8 @@ let ROLE_PERMISSIONS: Record<string, string[]> = {
     "products:create",
     "products:update",
     "products:delete",
+    "notifications:read",
+    "notifications:write",
   ],
 };
 

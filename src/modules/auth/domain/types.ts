@@ -3,7 +3,9 @@ import { UserRole } from "@/modules/users/domain/entities/user.entity";
 export type Action = 
   | 'users:create' | 'users:read' | 'users:update' | 'users:delete'
   | 'products:create' | 'products:read' | 'products:update' | 'products:delete'
-  | 'settings:read' | 'settings:write';
+  | 'notifications:read' | 'notifications:write'
+  | 'settings:read' | 'settings:write'
+  | 'impersonate';
 
 export interface AuthUser {
   id: string;

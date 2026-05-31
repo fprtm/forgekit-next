@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { notifications, userNotificationSettings } from "@/modules/notifications/infrastructure/database/drizzle/schema";
-import { NotificationRepository } from "@/modules/notifications/domain/repositories/notification.repository";
+import { NotificationRepository, PaginationOptions } from "@/modules/notifications/domain/repositories/notification.repository";
 import { NotificationEntity, UserNotificationSettingsEntity } from "@/modules/notifications/domain/entities/notification.entity";
 
 export class DrizzleNotificationRepository implements NotificationRepository {
@@ -47,21 +47,31 @@ export class DrizzleNotificationRepository implements NotificationRepository {
     };
   }
 
-  async findByUserId(userId: string): Promise<NotificationEntity[]> {
-    const rows = await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.userId, userId));
+  async findByUserId(userId: string, options?: PaginationOptions): Promise<NotificationEntity[]> {
+    try {
+      const query = db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, userId))
+        .orderBy(desc(notifications.createdAt))
+        .limit(options?.limit ?? 100)
+        .offset(options?.offset ?? 0);
 
-    return rows.map((row) => ({
-      id: row.id,
-      userId: row.userId,
-      title: row.title,
-      message: row.message,
-      read: row.read,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    }));
+      const rows = await query;
+
+      return rows.map((row) => ({
+        id: row.id,
+        userId: row.userId,
+        title: row.title,
+        message: row.message,
+        read: row.read,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      }));
+    } catch (error) {
+      console.error("[DrizzleNotificationRepository.findByUserId] Database error:", error);
+      throw error;
+    }
   }
 
   async markAsRead(id: string): Promise<void> {
@@ -69,6 +79,19 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       .update(notifications)
       .set({ read: true, updatedAt: new Date() })
       .where(eq(notifications.id, id));
+  }
+
+  async markAllAsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ read: true, updatedAt: new Date() })
+      .where(eq(notifications.userId, userId));
+  }
+
+  async deleteAllByUserId(userId: string): Promise<void> {
+    await db
+      .delete(notifications)
+      .where(eq(notifications.userId, userId));
   }
 
   async findSettingsByUserId(userId: string): Promise<UserNotificationSettingsEntity | null> {
