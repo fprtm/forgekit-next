@@ -50,3 +50,16 @@ export class UserRegisteredEvent implements DomainEvent {
     this.user = user;
   }
 }
+
+export class UserPasswordResetEvent implements DomainEvent {
+  public readonly eventName = "UserPasswordResetEvent";
+  public readonly occurredOn: Date;
+  public readonly user: UserEntity;
+  public readonly adminId: string | null;
+
+  constructor(user: UserEntity, adminId: string | null) {
+    this.occurredOn = new Date();
+    this.user = user;
+    this.adminId = adminId;
+  }
+}

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, date } from "drizzle-orm/pg-core";
 import { UserRole } from "../../../domain/entities/user.entity";
 
 export const users = pgTable("users", {
@@ -11,6 +11,31 @@ export const users = pgTable("users", {
   image: text("image"),
   role: text("role", { enum: UserRole }).default("user").notNull(),
   password: text("password"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userProfiles = pgTable("user_profiles", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  bio: text("bio"),
+  phoneNumber: text("phone_number"),
+  dateOfBirth: date("date_of_birth"),
+  gender: text("gender"),
+  preferredPronouns: text("preferred_pronouns"),
+
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country"),
+  postalCode: text("postal_code"),
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

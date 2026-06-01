@@ -4,6 +4,7 @@ import {
   ShoppingBag,
   Settings,
   Users,
+  UserCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,14 +24,14 @@ export interface SidebarMenuItem {
 }
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
-  { 
-    href: "/d", 
-    label: "Dashboard", 
-    icon: LayoutDashboard 
+  {
+    href: "/d",
+    label: "Dashboard",
+    icon: LayoutDashboard
   },
-  { 
-    href: "/d/products", 
-    label: "Products", 
+  {
+    href: "/d/products",
+    label: "Products",
     icon: ShoppingBag,
     requiredAction: "products:read"
   },
@@ -40,25 +41,26 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     icon: Users,
     requiredAction: "users:read",
     children: [
-      { 
-        href: "/d/users", 
-        label: "List Users", 
-        requiredAction: "users:read" 
-      },
-      { 
-        href: "/d/users/create", 
-        label: "Create User", 
-        requiredAction: "users:create" 
+      {
+        href: "/d/users/accounts",
+        label: "Accounts",
+        requiredAction: "users:read"
       },
       {
-        href: "/d/profile",
-        label: "Account",
+        href: "/d/users/admins",
+        label: "Admins",
+        requiredAction: "users:read"
+      },
+      {
+        href: "/d/users/users",
+        label: "Users",
+        requiredAction: "users:read"
       },
     ],
   },
-  { 
-    href: "/d/settings", 
-    label: "Settings", 
-    icon: Settings 
-  },
+  {
+    href: "/d/settings",
+    label: "Settings",
+    icon: Settings
+  }
 ];

@@ -11,3 +11,5 @@ export class InvalidRoleException extends DomainException {
     super(`The role '${role}' is not valid or unauthorized.`, "INVALID_ROLE", 400);
   }
 }
+
+

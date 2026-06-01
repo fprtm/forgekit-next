@@ -14,6 +14,8 @@ import { CreateUserCommand } from "../../../application/use-cases/create-user/cr
 import { UpdateProfileCommand } from "../../../application/use-cases/update-profile/update-profile.command"
 import { RegisterUserCommand } from "../../../application/use-cases/register-user/register-user.command"
 
+import { ResetPasswordHandler } from "../../../application/use-cases/reset-password/reset-password.handler"
+import { ResetPasswordCommand } from "../../../application/use-cases/reset-password/reset-password.command"
 import { DomainException } from "@/shared/domain/exceptions/domain.exception"
 
 type ActionResult<T> =
@@ -28,6 +30,7 @@ const createUserUC = new CreateUserHandler(userRepo)
 const updateProfileUC = new UpdateProfileHandler(userRepo)
 const deleteUserUC = new DeleteUserHandler(userRepo)
 const registerUserUC = new RegisterUserHandler(userRepo, passwordHasher)
+const resetPasswordUC = new ResetPasswordHandler(userRepo, passwordHasher)
 
 export async function getUsersAction(): Promise<ActionResult<UserEntity[]>> {
   const session = await auth()
@@ -151,5 +154,21 @@ export async function registerUserAction(
     console.error("REGISTER USER ERROR:", error)
     const message = error instanceof Error ? error.message : "Internal error"
     return { success: false, error: message, data: null }
+  }
+}
+
+export async function resetPasswordAction(
+  input: ResetPasswordCommand,
+): Promise<ActionResult<{ email: string; newPassword: string }>> {
+  const session = await auth()
+  try {
+    const result = await resetPasswordUC.execute({ ...input, currentUser: session?.user })
+    return { success: true, data: result, error: null }
+  } catch (error: unknown) {
+    if (error instanceof DomainException) {
+      return { success: false, error: error.message, data: null }
+    }
+    console.error("RESET PASSWORD ERROR:", error)
+    return { success: false, error: "Internal Server Error", data: null }
   }
 }

@@ -57,6 +57,7 @@ describe("Auth Impersonate - Unit Tests", () => {
       create: mock(() => Promise.resolve(dummyUser)),
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
+      updatePassword: mock(() => Promise.resolve(dummyUser)),
     };
   });
 

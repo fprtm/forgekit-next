@@ -42,4 +42,13 @@ export class DrizzleUserRepository implements IUserRepository {
     const [deleted] = await db.delete(users).where(eq(users.id, id)).returning()
     return deleted as unknown as UserEntity
   }
+
+  async updatePassword(id: string, hashedPassword: string): Promise<UserEntity> {
+    const [updated] = await db
+      .update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning()
+    return updated as unknown as UserEntity
+  }
 }

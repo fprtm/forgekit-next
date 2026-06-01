@@ -15,10 +15,11 @@ export class DeleteUserHandler {
     const existing = await this.userRepository.findById(command.id)
     if (!existing) throw new UserNotFoundException(command.id)
 
-    if (command.currentUser) {
-      if (!can(command.currentUser, "users:delete", { ownerId: command.id })) {
-        throw new UnauthorizedException()
-      }
+    if (!command.currentUser) {
+      throw new UnauthorizedException()
+    }
+    if (!can(command.currentUser, "users:delete", { ownerId: command.id })) {
+      throw new UnauthorizedException()
     }
 
     const deleted = await this.userRepository.delete(command.id)

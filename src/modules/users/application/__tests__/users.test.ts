@@ -26,6 +26,8 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
     updatedAt: new Date(),
   };
 
+  const superAdminUser = { id: "admin-1", role: "super_admin" as const };
+
   beforeEach(() => {
     mockUserRepository = {
       findMany: mock(() => Promise.resolve([dummyUser])),
@@ -34,6 +36,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
       create: mock((data) => Promise.resolve({ ...dummyUser, ...data })),
       update: mock((id, data) => Promise.resolve({ ...dummyUser, ...data })),
       delete: mock(() => Promise.resolve(dummyUser)),
+      updatePassword: mock(() => Promise.resolve(dummyUser)),
     };
   });
 
@@ -62,7 +65,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
   describe("Use Cases (Business Logic)", () => {
     it("should get all users and mask emailVerified via GetUsersHandler", async () => {
       const handler = new GetUsersHandler(mockUserRepository);
-      const result = await handler.execute({});
+      const result = await handler.execute({ currentUser: superAdminUser });
 
       expect(result[0].emailVerified).toBeNull();
       expect(mockUserRepository.findMany).toHaveBeenCalled();
@@ -80,7 +83,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
 
     it("should get user profile via GetUserProfileHandler", async () => {
       const handler = new GetUserProfileHandler(mockUserRepository);
-      const result = await handler.execute({ id: "user-1" });
+      const result = await handler.execute({ id: "user-1", currentUser: superAdminUser });
 
       expect(result.id).toBe("user-1");
       expect(result.emailVerified).toBeNull();
@@ -98,7 +101,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
 
     it("should delete user via DeleteUserHandler", async () => {
       const handler = new DeleteUserHandler(mockUserRepository);
-      const result = await handler.execute({ id: "user-1" });
+      const result = await handler.execute({ id: "user-1", currentUser: superAdminUser });
 
       expect(result.id).toBe("user-1");
       expect(mockUserRepository.delete).toHaveBeenCalled();

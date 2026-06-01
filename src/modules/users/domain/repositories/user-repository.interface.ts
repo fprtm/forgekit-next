@@ -7,4 +7,5 @@ export interface IUserRepository {
   findById(id: string): Promise<UserEntity | null>
   update(id: string, data: any): Promise<UserEntity>
   delete(id: string): Promise<UserEntity>
+  updatePassword(id: string, hashedPassword: string): Promise<UserEntity>
 }

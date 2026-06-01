@@ -1,38 +1,16 @@
-import { waitForTyping } from "@/shared/lib/utils";
-import { test, expect, type Browser } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { createProductFixture } from "./product.factory";
-
-const SEED_EMAIL = "e2e-superadmin@forgekit.test";
-const SEED_PASSWORD = "00superadmin@forgekit.test";
-
-async function loginAndGetCookies(browser: Browser): Promise<{ name: string; value: string; domain: string; path: string }[]> {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
-  await page.goto("/login");
-  await page.getByLabel("Email Address").fill(SEED_EMAIL);
-  await page.getByLabel("Password").fill(SEED_PASSWORD);
-  await page.getByRole("button", { name: "Sign In with Email" }).click();
-  await page.waitForURL("/d");
-
-  const cookies = await context.cookies();
-  await context.close();
-
-  return cookies.map(c => ({ name: c.name, value: c.value, domain: c.domain, path: c.path }));
-}
+import { loginAsSuperAdmin } from "@/shared/tests/e2e-helpers";
 
 test.describe.serial("Products Module E2E", () => {
-  let authCookies: { name: string; value: string; domain: string; path: string }[];
-
-  test.beforeAll(async ({ browser }) => {
-    authCookies = await loginAndGetCookies(browser);
+  test.beforeEach(async ({ page }) => {
+    await loginAsSuperAdmin(page);
   });
 
   let uniqueProductName: string;
   let editedProductName: string;
 
-  test("should navigate to products page and display the list", async ({ page, context }) => {
-    await context.addCookies(authCookies);
+  test("should navigate to products page and display the list", async ({ page }) => {
     await page.goto("/d/products");
 
     await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
@@ -42,18 +20,13 @@ test.describe.serial("Products Module E2E", () => {
     ).toBeVisible();
   });
 
-  test("should successfully create a new product and see it in the list", async ({ page, context }) => {
+  test("should successfully create a new product and see it in the list", async ({ page }) => {
     const productData = createProductFixture("E2E Product");
     uniqueProductName = productData.name;
 
-    await context.addCookies(authCookies);
     await page.goto("/d/products/create");
-    await page
-      .getByLabel("Product Name")
-      .pressSequentially(uniqueProductName, { delay: waitForTyping() });
-    await page
-      .getByLabel("Price")
-      .pressSequentially(productData.price, { delay: waitForTyping() });
+    await page.getByLabel("Product Name").fill(uniqueProductName);
+    await page.getByLabel("Price").fill(productData.price);
     await page.getByRole("button", { name: "Create Product" }).click();
 
     await expect(page).toHaveURL(/.*\/d\/products$/);
@@ -61,8 +34,7 @@ test.describe.serial("Products Module E2E", () => {
     await expect(page.getByText(uniqueProductName)).toBeVisible();
   });
 
-  test("should successfully edit a product", async ({ page, context }) => {
-    await context.addCookies(authCookies);
+  test("should successfully edit a product", async ({ page }) => {
     await page.goto("/d/products");
 
     await page.waitForTimeout(1000);
@@ -81,14 +53,10 @@ test.describe.serial("Products Module E2E", () => {
     editedProductName = editData.name;
 
     await page.getByLabel("Product Name").clear();
-    await page
-      .getByLabel("Product Name")
-      .pressSequentially(editedProductName, { delay: waitForTyping() });
+    await page.getByLabel("Product Name").fill(editedProductName);
 
     await page.getByLabel("Price").clear();
-    await page
-      .getByLabel("Price")
-      .pressSequentially("20000", { delay: waitForTyping() });
+    await page.getByLabel("Price").fill("20000");
 
     await page.getByRole("button", { name: "Update Product" }).click();
 
@@ -98,8 +66,7 @@ test.describe.serial("Products Module E2E", () => {
     await expect(page.getByText(editedProductName)).toBeVisible();
   });
 
-  test("should successfully delete a product", async ({ page, context }) => {
-    await context.addCookies(authCookies);
+  test("should successfully delete a product", async ({ page }) => {
     await page.goto("/d/products");
 
     await page.waitForTimeout(1000);
@@ -118,8 +85,7 @@ test.describe.serial("Products Module E2E", () => {
     await expect(page.getByText("Product deleted successfully")).toBeVisible();
   });
 
-  test("should show validation errors on empty form submit", async ({ page, context }) => {
-    await context.addCookies(authCookies);
+  test("should show validation errors on empty form submit", async ({ page }) => {
     await page.goto("/d/products/create");
     await page.getByRole("button", { name: "Create Product" }).click();
 

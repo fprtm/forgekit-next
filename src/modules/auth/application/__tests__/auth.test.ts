@@ -25,6 +25,7 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
       create: mock(() => Promise.resolve(dummyUser)),
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
+      updatePassword: mock(() => Promise.resolve(dummyUser)),
     }
 
     const mockPasswordHasher: IPasswordHasher = {
@@ -51,6 +52,7 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
       create: mock(() => Promise.resolve(dummyUser)),
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
+      updatePassword: mock(() => Promise.resolve(dummyUser)),
     }
 
     const mockPasswordHasher: IPasswordHasher = {

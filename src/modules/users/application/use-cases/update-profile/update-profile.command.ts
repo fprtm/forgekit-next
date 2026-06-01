@@ -7,5 +7,15 @@ export interface UpdateProfileCommand {
   email?: string
   password?: string
   role?: UserRole
+  bio?: string | null
+  phoneNumber?: string | null
+  dateOfBirth?: string | null
+  gender?: string | null
+  preferredPronouns?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  postalCode?: string | null
   currentUser?: AuthUser
 }
