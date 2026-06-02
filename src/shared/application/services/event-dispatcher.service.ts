@@ -41,5 +41,7 @@ if (typeof window === "undefined") {
     import("@/modules/users/application/services/user-notification.service"),
     import("@/modules/products/application/services/product-inventory.service"),
     import("@/modules/notifications/application/services/notification.listener"),
+    import("@/modules/notifications/application/services/notification-email.listener"),
+    import("@/modules/notifications/application/services/notification-whatsapp.listener"),
   ]).catch(console.error);
 }

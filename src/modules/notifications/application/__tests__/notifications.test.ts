@@ -18,7 +18,10 @@ describe("Notifications - Unit Tests", () => {
     userId: "user-1",
     title: "Test Title",
     message: "Test Message",
+    type: "general",
+    priority: "medium",
     read: false,
+    readAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -29,8 +32,18 @@ describe("Notifications - Unit Tests", () => {
     email: true,
     push: true,
     whatsapp: true,
+    system: true,
+    security: true,
+    marketing: true,
+    product: true,
+    general: true,
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  const dummySettingsMarketingDisabled: UserNotificationSettingsEntity = {
+    ...dummySettings,
+    marketing: false,
   };
 
   beforeEach(() => {
@@ -44,6 +57,7 @@ describe("Notifications - Unit Tests", () => {
       findSettingsByUserId: mock(() => Promise.resolve(dummySettings)),
       saveSettings: mock((data) => Promise.resolve({ ...dummySettings, ...data })),
       updateSettings: mock((userId, data) => Promise.resolve({ ...dummySettings, ...data })),
+      getUnreadCount: mock(() => Promise.resolve(0)),
     };
 
     mockSettingRepository = {
@@ -125,6 +139,112 @@ describe("Notifications - Unit Tests", () => {
       expect(result).toBeNull();
       expect(mockNotificationRepository.save).not.toHaveBeenCalled();
     });
+
+    it("should send notification with custom type and priority", async () => {
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        title: "Security Alert",
+        message: "Suspicious login detected",
+        type: "security",
+        priority: "critical",
+      });
+
+      expect(result).not.toBeNull();
+      expect(mockNotificationRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "security",
+          priority: "critical",
+          read: false,
+          readAt: null,
+        })
+      );
+    });
+
+    it("should use default type and priority when not specified", async () => {
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      await handler.execute({
+        userId: "user-1",
+        title: "Hello",
+        message: "World",
+      });
+
+      expect(mockNotificationRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "general",
+          priority: "medium",
+        })
+      );
+    });
+
+    it("should set readAt when marking as read", async () => {
+      const markAsReadMock = mock(() => Promise.resolve());
+      mockNotificationRepository.markAsRead = markAsReadMock;
+
+      await mockNotificationRepository.markAsRead("notif-1");
+
+      expect(markAsReadMock).toHaveBeenCalledWith("notif-1");
+    });
+
+    it("should skip notification when user unsubscribed from that type", async () => {
+      mockNotificationRepository.findSettingsByUserId = mock(() => Promise.resolve(dummySettingsMarketingDisabled));
+
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        title: "Marketing Offer",
+        message: "50% off!",
+        type: "marketing",
+      });
+
+      expect(result).toBeNull();
+      expect(mockNotificationRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("should deliver notification for mandatory type even if not in settings", async () => {
+      mockNotificationRepository.findSettingsByUserId = mock(() => Promise.resolve(dummySettingsMarketingDisabled));
+
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        title: "Security Alert",
+        message: "Login from new device",
+        type: "security",
+      });
+
+      expect(result).not.toBeNull();
+      expect(mockNotificationRepository.save).toHaveBeenCalled();
+    });
+
+    it("should deliver notification for unsubscribed mandatory type (system)", async () => {
+      mockNotificationRepository.findSettingsByUserId = mock(() => Promise.resolve(dummySettingsMarketingDisabled));
+
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        title: "System Maintenance",
+        message: "Scheduled downtime",
+        type: "system",
+      });
+
+      expect(result).not.toBeNull();
+      expect(mockNotificationRepository.save).toHaveBeenCalled();
+    });
+
+    it("should deliver notification when user is subscribed to that type", async () => {
+      mockNotificationRepository.findSettingsByUserId = mock(() => Promise.resolve(dummySettings));
+
+      const handler = new SendNotificationHandler(mockNotificationRepository, mockSettingRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        title: "Product Update",
+        message: "New version available",
+        type: "product",
+      });
+
+      expect(result).not.toBeNull();
+      expect(mockNotificationRepository.save).toHaveBeenCalled();
+    });
   });
 
   describe("UpdateUserSettingHandler", () => {
@@ -151,6 +271,52 @@ describe("Notifications - Unit Tests", () => {
 
       expect(result).not.toBeNull();
       expect(mockNotificationRepository.saveSettings).toHaveBeenCalled();
+    });
+
+    it("should update subscription fields while respecting mandatory types", async () => {
+      const handler = new UpdateUserSettingHandler(mockNotificationRepository);
+      const result = await handler.execute({
+        userId: "user-1",
+        subscriptions: {
+          marketing: false,
+          product: false,
+          security: false,
+          system: false,
+        },
+      });
+
+      expect(result).not.toBeNull();
+      expect(mockNotificationRepository.updateSettings).toHaveBeenCalledWith(
+        "user-1",
+        expect.objectContaining({
+          marketing: false,
+          product: false,
+        })
+      );
+      // mandatory types should NOT be included in update
+      const updateCall = (mockNotificationRepository.updateSettings as ReturnType<typeof mock>).mock.calls[0][1];
+      expect(updateCall).not.toHaveProperty("system");
+      expect(updateCall).not.toHaveProperty("security");
+    });
+
+    it("should include default subscriptions when creating new settings", async () => {
+      mockNotificationRepository.findSettingsByUserId = mock(() => Promise.resolve(null));
+
+      const handler = new UpdateUserSettingHandler(mockNotificationRepository);
+      await handler.execute({
+        userId: "user-1",
+        subscriptions: { marketing: false },
+      });
+
+      expect(mockNotificationRepository.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          system: true,
+          security: true,
+          marketing: false,
+          product: true,
+          general: true,
+        })
+      );
     });
   });
 });

@@ -5,7 +5,6 @@ export class GetUnreadCountHandler {
   constructor(private readonly notificationRepo: NotificationRepository) {}
 
   async execute(command: GetUnreadCountCommand): Promise<number> {
-    const notifications = await this.notificationRepo.findByUserId(command.userId);
-    return notifications.filter((n) => !n.read).length;
+    return this.notificationRepo.getUnreadCount(command.userId);
   }
 }

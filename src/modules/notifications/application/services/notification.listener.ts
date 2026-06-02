@@ -16,6 +16,8 @@ export class NotificationListener {
         userId: event.userId,
         title: "Security Alert: New Login",
         message: `Your account was successfully logged in from IP address: ${event.ipAddress || 'unknown'}. If this wasn't you, please change your password immediately.`,
+        type: "security",
+        priority: "high",
       }).catch(console.error);
     });
   }

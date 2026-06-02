@@ -5,6 +5,7 @@ import {
   Settings,
   Users,
   UserCircle,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 
@@ -61,6 +62,13 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
   {
     href: "/d/settings",
     label: "Settings",
-    icon: Settings
+    icon: Settings,
+    children: [
+      {
+        href: "/d/settings/notifications",
+        label: "Notifications",
+        icon: Bell,
+      },
+    ],
   }
 ];

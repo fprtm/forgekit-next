@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback, startTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, CheckCheck } from "lucide-react"
+import { Bell, CheckCheck, ShieldAlert, ShoppingBag, Info, Megaphone, Settings, AlertTriangle, AlertCircle, AlertOctagon } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import {
@@ -14,7 +14,22 @@ import {
 } from "@/shared/components/ui/sheet"
 import { format } from "date-fns"
 import { getNotificationsAction, getUnreadCountAction, markAsReadAction, markAllAsReadAction } from "../../http/actions/notification.actions"
-import type { NotificationEntity } from "../../../domain/entities/notification.entity"
+import type { NotificationEntity, NotificationType, NotificationPriority } from "../../../domain/entities/notification.entity"
+
+const typeConfig: Record<NotificationType, { icon: React.ElementType; label: string; color: string }> = {
+  system: { icon: Settings, label: "System", color: "text-zinc-500" },
+  security: { icon: ShieldAlert, label: "Security", color: "text-red-500" },
+  marketing: { icon: Megaphone, label: "Marketing", color: "text-purple-500" },
+  product: { icon: ShoppingBag, label: "Product", color: "text-blue-500" },
+  general: { icon: Info, label: "General", color: "text-zinc-400" },
+}
+
+const priorityIcon: Record<NotificationPriority, { icon: React.ElementType; color: string }> = {
+  low: { icon: AlertCircle, color: "text-zinc-400" },
+  medium: { icon: AlertTriangle, color: "text-yellow-500" },
+  high: { icon: AlertTriangle, color: "text-orange-500" },
+  critical: { icon: AlertOctagon, color: "text-red-600" },
+}
 
 const PAGE_SIZE = 20
 
@@ -175,56 +190,66 @@ export function NotificationSheet() {
             </div>
           ) : (
             <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-              {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  type="button"
-                  onClick={() => !notification.read && handleMarkAsRead(notification.id)}
-                  disabled={notification.read}
-                  className={`w-full text-left px-6 py-4 transition-colors ${
-                    notification.read
-                      ? "bg-background hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30"
-                      : "bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 cursor-pointer"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1.5 shrink-0">
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          notification.read
-                            ? "bg-zinc-300 dark:bg-zinc-600"
-                            : "bg-blue-600"
-                        }`}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`text-sm truncate ${
+              {notifications.map((notification) => {
+                const TypeIcon = typeConfig[notification.type]?.icon ?? Info
+                const PriorityIcon = priorityIcon[notification.priority]?.icon ?? AlertCircle
+                return (
+                  <button
+                    key={notification.id}
+                    type="button"
+                    onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                    disabled={notification.read}
+                    className={`w-full text-left px-6 py-4 transition-colors ${
+                      notification.read
+                        ? "bg-background hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30"
+                        : "bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1.5 shrink-0">
+                        <div
+                          className={`h-2 w-2 rounded-full ${
                             notification.read
-                              ? "text-muted-foreground"
-                              : "font-semibold text-foreground"
+                              ? "bg-zinc-300 dark:bg-zinc-600"
+                              : "bg-blue-600"
+                          }`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <TypeIcon className={`h-3.5 w-3.5 shrink-0 ${typeConfig[notification.type]?.color ?? "text-zinc-400"}`} />
+                            <span
+                              className={`text-sm truncate ${
+                                notification.read
+                                  ? "text-muted-foreground"
+                                  : "font-semibold text-foreground"
+                              }`}
+                            >
+                              {notification.title}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <PriorityIcon className={`h-3 w-3 ${priorityIcon[notification.priority]?.color ?? "text-zinc-400"}`} />
+                            <span className="text-[10px] text-muted-foreground">
+                              {format(new Date(notification.createdAt), "MMM d, HH:mm")}
+                            </span>
+                          </div>
+                        </div>
+                        <p
+                          className={`text-xs mt-0.5 line-clamp-2 ${
+                            notification.read
+                              ? "text-muted-foreground/60"
+                              : "text-muted-foreground"
                           }`}
                         >
-                          {notification.title}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground shrink-0">
-                          {format(new Date(notification.createdAt), "MMM d, HH:mm")}
-                        </span>
+                          {notification.message}
+                        </p>
                       </div>
-                      <p
-                        className={`text-xs mt-0.5 line-clamp-2 ${
-                          notification.read
-                            ? "text-muted-foreground/60"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {notification.message}
-                      </p>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                )
+              })}
             </div>
           )}
           {loading && (

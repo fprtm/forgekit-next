@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, count } from "drizzle-orm";
 import { notifications, userNotificationSettings } from "@/modules/notifications/infrastructure/database/drizzle/schema";
 import { NotificationRepository, PaginationOptions } from "@/modules/notifications/domain/repositories/notification.repository";
 import { NotificationEntity, UserNotificationSettingsEntity } from "@/modules/notifications/domain/entities/notification.entity";
@@ -14,7 +14,10 @@ export class DrizzleNotificationRepository implements NotificationRepository {
         userId: notification.userId,
         title: notification.title,
         message: notification.message,
+        type: notification.type,
+        priority: notification.priority,
         read: notification.read,
+        readAt: notification.readAt,
       })
       .returning();
 
@@ -23,7 +26,10 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       userId: row.userId,
       title: row.title,
       message: row.message,
+      type: row.type as NotificationEntity["type"],
+      priority: row.priority as NotificationEntity["priority"],
       read: row.read,
+      readAt: row.readAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -41,7 +47,10 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       userId: row.userId,
       title: row.title,
       message: row.message,
+      type: row.type as NotificationEntity["type"],
+      priority: row.priority as NotificationEntity["priority"],
       read: row.read,
+      readAt: row.readAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -64,7 +73,10 @@ export class DrizzleNotificationRepository implements NotificationRepository {
         userId: row.userId,
         title: row.title,
         message: row.message,
+        type: row.type as NotificationEntity["type"],
+        priority: row.priority as NotificationEntity["priority"],
         read: row.read,
+        readAt: row.readAt,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       }));
@@ -77,15 +89,28 @@ export class DrizzleNotificationRepository implements NotificationRepository {
   async markAsRead(id: string): Promise<void> {
     await db
       .update(notifications)
-      .set({ read: true, updatedAt: new Date() })
+      .set({ read: true, readAt: new Date(), updatedAt: new Date() })
       .where(eq(notifications.id, id));
   }
 
   async markAllAsRead(userId: string): Promise<void> {
     await db
       .update(notifications)
-      .set({ read: true, updatedAt: new Date() })
+      .set({ read: true, readAt: new Date(), updatedAt: new Date() })
       .where(eq(notifications.userId, userId));
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    const [row] = await db
+      .select({ value: count() })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.read, false)
+        )
+      );
+    return row?.value ?? 0;
   }
 
   async deleteAllByUserId(userId: string): Promise<void> {
@@ -107,6 +132,11 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       email: row.email,
       push: row.push,
       whatsapp: row.whatsapp,
+      system: row.system,
+      security: row.security,
+      marketing: row.marketing,
+      product: row.product,
+      general: row.general,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -122,6 +152,11 @@ export class DrizzleNotificationRepository implements NotificationRepository {
         email: settings.email,
         push: settings.push,
         whatsapp: settings.whatsapp,
+        system: settings.system,
+        security: settings.security,
+        marketing: settings.marketing,
+        product: settings.product,
+        general: settings.general,
       })
       .onConflictDoUpdate({
         target: userNotificationSettings.userId,
@@ -129,6 +164,11 @@ export class DrizzleNotificationRepository implements NotificationRepository {
           email: settings.email,
           push: settings.push,
           whatsapp: settings.whatsapp,
+          system: settings.system,
+          security: settings.security,
+          marketing: settings.marketing,
+          product: settings.product,
+          general: settings.general,
           updatedAt: new Date(),
         },
       })
@@ -140,6 +180,11 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       email: row.email,
       push: row.push,
       whatsapp: row.whatsapp,
+      system: row.system,
+      security: row.security,
+      marketing: row.marketing,
+      product: row.product,
+      general: row.general,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -164,6 +209,11 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       email: row.email,
       push: row.push,
       whatsapp: row.whatsapp,
+      system: row.system,
+      security: row.security,
+      marketing: row.marketing,
+      product: row.product,
+      general: row.general,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

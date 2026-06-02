@@ -15,4 +15,5 @@ export interface NotificationRepository {
   findSettingsByUserId(userId: string): Promise<UserNotificationSettingsEntity | null>;
   saveSettings(settings: Omit<UserNotificationSettingsEntity, "id" | "createdAt" | "updatedAt">): Promise<UserNotificationSettingsEntity>;
   updateSettings(userId: string, settings: Partial<Omit<UserNotificationSettingsEntity, "id" | "userId" | "createdAt" | "updatedAt">>): Promise<UserNotificationSettingsEntity>;
+  getUnreadCount(userId: string): Promise<number>;
 }

@@ -9,19 +9,28 @@ export async function seed(db: NodePgDatabase) {
       userId: "seed-default-user",
       title: "Welcome to ForgeKit!",
       message: "Thank you for joining our platform. Explore the dashboard to get started.",
+      type: "system" as const,
+      priority: "medium" as const,
       read: false,
+      readAt: null,
     },
     {
       userId: "seed-default-user",
       title: "Security Alert: New Login",
       message: "Your account was logged in from a new device. If this wasn't you, please contact support.",
+      type: "security" as const,
+      priority: "high" as const,
       read: false,
+      readAt: null,
     },
     {
       userId: "seed-default-user",
       title: "Product Created Successfully",
       message: "Your product 'Premium Laptop' has been created and is now visible in the marketplace.",
+      type: "product" as const,
+      priority: "medium" as const,
       read: true,
+      readAt: new Date(),
     },
   ];
 
