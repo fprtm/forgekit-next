@@ -1,8 +1,8 @@
 export const siteConfig = {
-  name: "ForgeKit",
-  shortName: "FK",
+  name: "PsyCare Booking",
+  shortName: "Psy",
   description:
-    "An enterprise-grade, highly scalable Next.js boilerplate built with strict 4-Layer Domain-Driven Design (DDD) principles.",
+    "Your dedicated platform for seamless psychological consultation scheduling and management.",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   author: "Ferry Pratama",
   links: {

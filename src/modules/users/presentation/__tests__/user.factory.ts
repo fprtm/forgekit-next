@@ -7,7 +7,7 @@
  */
 
 import { generateUniqueString } from "@/shared/lib/utils";
-import { UserRole } from "../../domain/entities/user.entity";
+import { UserRole } from "@/shared/config/roles";
 
 export interface UserFixture {
   name: string;
@@ -31,6 +31,6 @@ export function createUserFixture(prefix = "User"): UserFixture {
   return {
     name: uniqueName,
     email: uniqueEmail,
-    role: "user",
+    role: "guest",
   };
 }

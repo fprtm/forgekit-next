@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import { UserEntity, UserRole } from "../../../../domain/entities/user.entity"
+import { UserEntity } from "../../../../domain/entities/user.entity"
+import { UserRole } from "@/shared/config/roles"
 import { formatRole } from "@/shared/lib/utils"
 import { useUserForm } from "../../hooks/use-user-form"
 import { Gender } from "@/shared/constant/gender"
@@ -27,8 +28,8 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
   const { form, onSubmit, isEditing } = useUserForm(initialData)
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Form {...form as any}>
+      <form onSubmit={form.handleSubmit(onSubmit) as any} className="space-y-6">
         <div className="flex gap-4">
           <FormField
             control={form.control}

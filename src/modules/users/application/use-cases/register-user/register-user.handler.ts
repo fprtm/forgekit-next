@@ -31,13 +31,13 @@ export class RegisterUserHandler {
     // Hash password securely using the abstraction Port (IPasswordHasher)
     const hashedPassword = await this.passwordHasher.hash(parsed.password)
 
-    // DevSecOps Security: Hardcode role to 'user' for public registration path.
+    // DevSecOps Security: Hardcode role to 'patient' for public registration path.
     // Avoids privilege escalation completely.
     const created = await this.userRepository.create({
       name: parsed.name,
       email: parsed.email,
       password: hashedPassword,
-      role: "user",
+      role: "patient",
     })
 
     await eventDispatcher.dispatch(

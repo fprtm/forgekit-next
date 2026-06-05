@@ -1,4 +1,4 @@
-import { UserRole } from "@/modules/users/domain/entities/user.entity";
+import { UserRole } from "@/shared/config/roles";
 
 export type Action = 
   | 'users:create' | 'users:read' | 'users:update' | 'users:delete'
@@ -9,7 +9,7 @@ export type Action =
 
 export interface AuthUser {
   id: string;
-  role: UserRole | string;
+  role: UserRole;
   name?: string | null;
   email?: string | null;
 }

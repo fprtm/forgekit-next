@@ -1,5 +1,4 @@
-export const UserRole = ["super_admin", "admin", "user"] as const;
-export type UserRole = (typeof UserRole)[number];
+import { UserRole } from "@/shared/config/roles";
 
 export interface UserProfile {
   id: string

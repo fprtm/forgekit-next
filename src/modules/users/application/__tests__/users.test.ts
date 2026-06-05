@@ -21,7 +21,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
     email: "john@example.com",
     emailVerified: new Date(),
     image: null,
-    role: "user",
+    role: "patient",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -73,7 +73,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
 
     it("should create a user via CreateUserHandler", async () => {
       const handler = new CreateUserHandler(mockUserRepository);
-      const input = { name: "Alice", email: "alice@example.com", role: "user" as const };
+      const input = { name: "Alice", email: "alice@example.com", role: "patient" as const };
       const result = await handler.execute(input);
 
       expect(result.name).toBe("Alice");

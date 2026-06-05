@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { DrizzleUserRepository } from "@/modules/users/infrastructure/database/repositories/drizzle-user.repository";
 import { ValidateCredentialsHandler } from "@/modules/auth/application/use-cases/validate-credentials/validate-credentials.handler";
 import { BcryptPasswordHasher } from "@/modules/auth/infrastructure/services/bcrypt-password-hasher";
-import { UserRole } from "@/modules/users/domain/entities/user.entity";
+import { UserRole } from "@/shared/config/roles";
 import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { loginLimiter } from "@/shared/lib/rate-limit";

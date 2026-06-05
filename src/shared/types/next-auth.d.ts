@@ -1,5 +1,5 @@
 import { DefaultSession, DefaultUser } from "next-auth";
-import { UserRole } from "@/modules/users/domain/entities/user.entity";
+import { UserRole } from "@/shared/config/roles";
 
 declare module "next-auth" {
   interface Session {

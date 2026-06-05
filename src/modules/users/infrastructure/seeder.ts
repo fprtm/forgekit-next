@@ -57,21 +57,21 @@ export async function seed(db: NodePgDatabase) {
       name: "User Satu Test",
       email: "user1@forgekit.test",
       password: "00user1@forgekit.test",
-      role: "user" as const,
+      role: "patient" as const,
     },
     {
       id: "e2e-user-2",
       name: "User Dua Test",
       email: "user2@forgekit.test",
       password: "00user2@forgekit.test",
-      role: "user" as const,
+      role: "patient" as const,
     },
     {
       id: "e2e-user-3",
       name: "User Tiga Test",
       email: "user3@forgekit.test",
       password: "00user3@forgekit.test",
-      role: "user" as const,
+      role: "patient" as const,
     },
   ];
 

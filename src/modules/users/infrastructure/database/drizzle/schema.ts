@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, date } from "drizzle-orm/pg-core";
-import { UserRole } from "../../../domain/entities/user.entity";
+import { UserRole } from "@/shared/config/roles";
 
 export const users = pgTable("users", {
   id: text("id")
@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
-  role: text("role", { enum: UserRole }).default("user").notNull(),
+  role: text("role", { enum: UserRole }).default("guest").notNull(),
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

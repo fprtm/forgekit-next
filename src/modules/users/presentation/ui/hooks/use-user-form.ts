@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createUserSchema, updateUserSchema } from "../../../application/validations"
 import { updateUser, createUserAction } from "../../http/actions/user.actions"
-import { UserEntity, UserRole } from "../../../domain/entities/user.entity"
+import { UserEntity } from "../../../domain/entities/user.entity"
+import { UserRole } from "@/shared/config/roles"
 
 export interface UserFormValues {
   name: string
@@ -31,7 +32,7 @@ export function useUserForm(initialData?: UserEntity) {
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",
-      role: initialData?.role || "user",
+      role: initialData?.role || "patient",
       bio: initialData?.profile?.bio || "",
       phoneNumber: initialData?.profile?.phoneNumber || "",
       dateOfBirth: initialData?.profile?.dateOfBirth || "",
@@ -69,7 +70,9 @@ export function useUserForm(initialData?: UserEntity) {
       const redirectMap: Record<UserRole, string> = {
         super_admin: "/d/users/admins",
         admin: "/d/users/admins",
-        user: "/d/users/users",
+        therapist: "/d/users/admins",
+        patient: "/d/users/users",
+        guest: "/d/users/users",
       }
 
       const redirectPath = redirectMap[data.role]

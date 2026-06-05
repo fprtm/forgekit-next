@@ -1,5 +1,5 @@
 import { AuthUser } from "@/modules/auth/domain/types"
-import { UserRole } from "../../../domain/entities/user.entity"
+import { UserRole } from "@/shared/config/roles"
 
 export interface UpdateProfileCommand {
   id: string

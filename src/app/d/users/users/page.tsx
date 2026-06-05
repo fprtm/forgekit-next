@@ -19,7 +19,7 @@ export default async function UsersByRolePage() {
   }
 
   const users = await getUsersUC.execute({ currentUser: session.user })
-  const filteredUsers = users.filter((u) => u.role === "user")
+  const filteredUsers = users.filter((u) => u.role === "patient")
   
   return <UserRoleListPage users={filteredUsers} currentUser={session.user} />
 }
