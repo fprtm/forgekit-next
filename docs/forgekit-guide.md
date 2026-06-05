@@ -136,43 +136,37 @@ src/
 │   │           └── route.ts
 │   ├── layout.tsx
 │   └── page.tsx
-├── actions/
-│   ├── auth.ts
-│   └── user.ts
-├── components/
-│   ├── ui/             # Shadcn — jangan modif manual
-│   ├── shared/
-│   │   ├── navbar.tsx
-│   │   └── sidebar.tsx
-│   └── forms/
-│       └── login-form.tsx
 ├── db/
 │   ├── schema/
 │   │   ├── index.ts
 │   │   └── user.ts
 │   ├── migrations/
 │   └── index.ts
-├── lib/
-│   ├── auth.ts
-│   ├── db.ts
-│   ├── utils.ts
-│   └── validations/
-│       └── user.ts
-├── hooks/
-│   └── use-user.ts
-├── types/
-│   └── index.ts
-├── config/
-│   └── site.ts
+├── shared/
+│   ├── components/
+│   │   ├── ui/             # Shadcn UI (e.g., button, input)
+│   │   ├── data-table/     # Reusable TanStack Table components
+│   │   └── layout/         # Dashboard layout, App Sidebar
+│   ├── lib/
+│   │   ├── utils.ts        # Helper functions (cn, formatRole, etc.)
+│   │   ├── auth.ts         # NextAuth v5 server instance
+│   │   └── api-response.ts # Standard API Response helpers
+│   ├── config/
+│   │   ├── auth.ts         # Edge-compatible OAuth providers config
+│   │   ├── env.ts          # Type-safe environment variables
+│   │   └── site.ts         # Site metadata configuration
+│   ├── constant/           # Shared enums and constant values
+│   ├── hooks/              # Shared custom hooks (e.g. use-mobile.ts)
+│   └── types/              # Shared types and NextAuth type overrides
 └── env.ts
 ```
 
 Buat folder sekaligus via terminal:
 
 ```bash
-mkdir -p src/actions src/components/shared src/components/forms
 mkdir -p src/db/schema src/db/migrations
-mkdir -p src/lib/validations src/hooks src/types src/config
+mkdir -p src/shared/components/ui src/shared/components/layout
+mkdir -p src/shared/lib src/shared/config src/shared/constant src/shared/hooks src/shared/types
 ```
 
 ---
@@ -771,7 +765,7 @@ bun dev
 Sebagai repositori skala enterprise, boilerplate ini telah berevolusi dari struktur Next.js tradisional ke **Modular Clean Architecture (Domain-Driven Design)** di bawah direktori `src/modules/`. Pemisahan ini memastikan kode fungsional bisnis terisolasi sempurna dan siap dikembangkan tanpa batas oleh banyak tim sekaligus.
 
 ### A. Anatomi 4-Layer Taxonomy per Modul
-Setiap modul baru (misal: `products`, `users`, `orders`) wajib mematuhi struktur folder 4-Layer berikut:
+Setiap modul baru (misal: `products`, `users`, `notifications`) wajib mematuhi struktur folder 4-Layer berikut:
 
 ```text
 src/modules/<module-name>/
@@ -796,17 +790,33 @@ src/modules/<module-name>/
 ```
 
 ### B. Aturan Emas Arsitektur (Architecture Guardrails)
-1. **The Dependency Rule**: Aliran dependensi wajib mengarah ke dalam (`domain`). Layer core (`domain`) tidak boleh mengimpor apa pun dari layer luar.
-2. **Thin Next.js App Router**: Direktori `src/app/` dilarang keras mengandung logika bisnis. File router Next.js hanya bertindak sebagai *Thin Router* yang memetakan URL langsung ke halaman React di `presentation/ui/pages/`.
-3. **Deep UI Separation**: UI kompleks (seperti form validasi interaktif dan tabel dinamis) wajib diletakkan di dalam folder `components/` milik modul masing-masing untuk menjaga kerapian kode.
+Setiap kontributor atau agen AI wajib mematuhi aturan arsitektur mutlak berikut tanpa pengecualian:
+
+1. **Zero Business Logic in App Router**: Berkas di dalam `src/app/` murni bertindak sebagai *Thin Delivery Mechanism*. Berkas tersebut HANYA boleh memetakan URL ke handler (`presentation/http/controllers` atau server `actions`). DILARANG keras melakukan kueri database (Drizzle) atau menulis aturan bisnis di dalam `src/app/`.
+2. **Inward Dependency Rule**: Arah ketergantungan wajib mengarah ke dalam: `Presentation -> Application -> Domain`. Layer `Domain` wajib bersih dan memiliki **ZERO external dependencies** (dilarang mengimpor UI, database, library pihak ketiga, atau framework).
+3. **Sub-folder Granularity**: Wajib memanfaatkan folder struktur secara detail dan granuler (`domain/events`, `domain/exceptions`, `presentation/http/controllers`, dsb.). Dilarang mengosongkan folder tersebut atau melakukan *mocking* tidak perlu.
+4. **Domain Exceptions & Stack Trace Protection**:
+   * DILARANG keras melempar kelas `Error` generik di dalam Use Case. Seluruh kegagalan logika bisnis wajib melempar *class* khusus turunan dari **`DomainException`** yang berada di dalam `domain/exceptions/`.
+   * Server Actions dan Controllers wajib menangkap `DomainException` untuk mengembalikan pesan error yang aman bagi klien, sedangkan error internal generik wajib disamarkan sebagai `"Internal Server Error"` dan dicatat di log server untuk perlindungan *stack trace*.
+5. **IDOR & AuthZ**: Setiap tindakan modifikasi/penghapusan data di Server Action atau Use Case wajib memvalidasi izin hak akses pengguna (menggunakan `can()` dari engine kebijakan *policies*) dan memverifikasi kepemilikan data (*ownership*).
+6. **No Manual Side-Effects in Use Cases/Actions**: Tindakan bisnis sekunder (seperti mencatat log audit, mengirim email, atau push notifikasi) DILARANG keras dieksekusi secara manual/langsung di dalam Server Actions atau jalur Use Case primer.
+7. **Event-Driven Side Effects (EDA)**: Aksi sekunder wajib dipicu menggunakan event domain asinkronus (`DomainEvent`) melalui `eventDispatcher.dispatch()`, dan diproses secara terpisah oleh *dedicated listeners* (seperti `AuditLogListener` atau `NotificationListener`) di bawah layer `application/services`.
 
 ### C. Daftar Modul Aktif Saat Ini
 1. **Products (`src/modules/products`)**:
    - Mengelola katalog produk lengkap dengan form pembuatan, edit harga, validasi, dan alur hapus otomatis.
 2. **Users (`src/modules/users`)**:
    - Mengelola data profil pengguna dan sistem administrasi pengguna (manajemen Nama, Email, dan Role Admin/User).
-3. **Orders (`src/modules/orders`)**:
-   - Modul skeleton terstruktur untuk menampung alur transaksi pemesanan di masa depan.
+3. **Notifications (`src/modules/notifications`)**:
+   - Sistem riwayat & preferensi notifikasi berlapis (konfigurasi sistem global + preferensi per-user) yang beroperasi asinkronus menggunakan Event-Driven Architecture.
+4. **Audit Logs (`src/modules/audit-logs`)**:
+   - Mengelola perekaman asinkronus aktivitas log sistem tingkat *enterprise* untuk seluruh tindakan sensitif aktor (DevSecOps compliant).
+5. **Auth (`src/modules/auth`)**:
+   - Pusat sistem autentikasi, pendaftaran, Edge-safe middleware, otorisasi Policies, serta fitur impersonasi Superadmin.
+6. **Setting (`src/modules/setting`)**:
+   - Mengelola seluruh konfigurasi global tingkat aplikasi/bisnis (kredensial API, data bisnis, timezone, dan preferensi modul asinkronus).
+7. **Dashboard (`src/modules/dashboard`)**:
+   - Kerangka UI dasbor utama untuk penyajian metrik data bisnis ringkas pengguna.
 
 ---
 
@@ -829,7 +839,7 @@ bun run test:unit
 ### B. Standardisasi Best-Practice Pengujian yang Diterapkan
 1. **Database-Agnostic E2E**: Seluruh pengujian E2E tidak memiliki ketergantungan pada seed database statis. Alur pembuatan, penyuntingan, dan penghapusan diuji secara berurutan dalam satu sesi pengujian untuk menjamin database tetap bersih (*database hygiene*).
 2. **Global Unique Generator & Domain Factories**:
-   - Menggunakan generator global `generateUniqueString(prefix)` di `src/lib/utils.ts` untuk memastikan tidak ada data bertabrakan di database saat tes paralel dijalankan.
+    - Menggunakan generator global `generateUniqueString(prefix)` di `src/shared/lib/utils.ts` untuk memastikan tidak ada data bertabrakan di database saat tes paralel dijalankan.
    - Setiap modul memiliki Factory dinamis terisolasi (seperti `product.factory.ts` dan `user.factory.ts` di folder presentasi masing-masing) untuk merakit payload pengujian.
 3. **Human-like Interaction**: Form pengisian menggunakan `.pressSequentially()` dengan jeda waktu acak (*random delay*) dan penundaan kecepatan aksi global (`slowMo: 500` di `playwright.config.ts`) agar jalannya visualisasi browser terasa nyata.
 4. **E2E Scoping & Outer Variables**: Menghindari tabrakan strict-mode Playwright dengan memfilter locator spesifik per baris tabel (`page.locator("tr").filter({ hasText: name })`) dan mencocokkan tombol aksi via dynamic `data-testid` (misal: `edit-button-${id}`).
@@ -941,3 +951,26 @@ ForgeKit menyertakan mesin seeding basis data sentral (`scripts/seed.ts`) yang s
   ```bash
   bun run db:seed --module users
   ```
+
+---
+
+## 17. Fitur Superadmin Impersonate (Login As)
+
+ForgeKit mendukung fitur impersonasi identitas bagi `super_admin` untuk masuk sementara sebagai akun pengguna lain.
+
+### Karakteristik & Alur Kerja Keamanan:
+1. **Validasi Domain Policy**: Kebijakan `"impersonate"` dibatasi ketat di tingkat *policy engine* (`policies.ts`) hanya untuk role `super_admin`.
+2. **NextAuth Intercept**: Berkas `src/shared/lib/auth.ts` memproses cookie asinkronus `impersonate_target` untuk bertukar sesi identitas pengguna secara sementara.
+3. **Identitas Asli Aman**: Sesi superadmin asli yang memicu impersonasi tersimpan di dalam field `originalUserId` & `originalUserRole` untuk memfasilitasi pemulihan sesi superadmin secara instan via endpoint `/api/auth/stop-impersonation`.
+4. **Audit Logs & Keamanan Compliance**: Setiap aktivitas impersonasi dicatat ke dalam **Audit Logs** menggunakan `auth-audit.listener.ts`.
+
+---
+
+## 18. Sistem Notifikasi Dinamis (Global & User Preferences)
+
+Sistem notifikasi diimplementasikan di `src/modules/notifications` dengan membagi pengaturan menjadi dua lapisan fungsional:
+
+1. **Konfigurasi Global (Sistem)**: Menggunakan tabel `settings` utama untuk mengontrol hidup/mati saluran notifikasi (email, push, whatsapp) secara global. Kredensial SMTP atau Fonnte disimpan di sini.
+2. **Preferensi Pengguna (User Settings)**: Menggunakan tabel `user_notification_settings` agar setiap pengguna dapat memilih apakah ingin menerima email, push, atau WhatsApp secara mandiri.
+3. **Arsitektur Filter Use-Case**: Pengiriman pesan (`SendNotificationHandler`) hanya mengeksekusi saluran apabila diaktifkan di tingkat global *dan* disetujui di tingkat preferensi pengguna.
+

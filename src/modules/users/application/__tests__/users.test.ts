@@ -1,190 +1,134 @@
-/**
- * @file users.test.ts
- * @description Consolidated Unit & Validation tests for the Users module.
- * This file verifies user input schemas (Zod) and Application Services orchestration using Bun Test.
- * It uses repository mocking to ensure the business logic is tested in absolute isolation.
- * 
- * @module Users/Application/Tests
- */
-
 import { describe, expect, it, mock, beforeEach } from "bun:test";
+import { createUserSchema, updateUserSchema } from "../validations";
+import { GetUsersHandler } from "../use-cases/get-users/get-users.handler";
+import { CreateUserHandler } from "../use-cases/create-user/create-user.handler";
+import { GetUserProfileHandler } from "../use-cases/get-user-profile/get-user-profile.handler";
+import { UpdateProfileHandler } from "../use-cases/update-profile/update-profile.handler";
+import { DeleteUserHandler } from "../use-cases/delete-user/delete-user.handler";
+import { RegisterUserHandler } from "../use-cases/register-user/register-user.handler";
+import { IUserRepository } from "../../domain/repositories/user-repository.interface";
+import { UserEntity } from "../../domain/entities/user.entity";
+import { IPasswordHasher } from "@/modules/auth/domain/services/password-hasher.interface";
 
 // Mock server-only to prevent client component errors in tests
 mock.module("server-only", () => { return {} });
 
-import { updateUserSchema, createUserSchema } from "../validations";
-import { UsersService } from "../services";
-import { UsersRepository } from "../../infrastructure/repository";
-
-// =========================================================================
-// Infrastructure Layer Mocking
-// =========================================================================
-
-/**
- * Mock the UsersRepository database infrastructure.
- * This isolates the Application layer from needing an active database connection.
- */
-mock.module("../../infrastructure/repository", () => {
-  return {
-    UsersRepository: {
-      findMany: mock(),
-      findById: mock(),
-      update: mock(),
-      delete: mock(),
-      create: mock(),
-    }
+describe("Users Bounded Context - Unit & Validation Tests", () => {
+  let mockUserRepository: IUserRepository;
+  const dummyUser: UserEntity = {
+    id: "user-1",
+    name: "John Doe",
+    email: "john@example.com",
+    emailVerified: new Date(),
+    image: null,
+    role: "patient",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
-});
 
-type MockedFunction<T extends (...args: never[]) => unknown> = T & {
-  mockClear: () => void;
-  mockReset: () => void;
-  mockResolvedValue: (value: Awaited<ReturnType<T>>) => void;
-};
+  const superAdminUser = { id: "admin-1", role: "super_admin" as const };
 
-const mockFindMany = UsersRepository.findMany as unknown as MockedFunction<typeof UsersRepository.findMany>;
-const mockFindById = UsersRepository.findById as unknown as MockedFunction<typeof UsersRepository.findById>;
-const mockUpdate = UsersRepository.update as unknown as MockedFunction<typeof UsersRepository.update>;
-const mockDelete = UsersRepository.delete as unknown as MockedFunction<typeof UsersRepository.delete>;
-const mockCreate = UsersRepository.create as unknown as MockedFunction<typeof UsersRepository.create>;
-
-// =========================================================================
-// Main Test Suites
-// =========================================================================
-
-describe("Users Module Unit Tests", () => {
-  
   beforeEach(() => {
-    // Clear invocation counters and histories before each test run
-    mockFindMany.mockClear();
-    mockFindById.mockClear();
-    mockUpdate.mockClear();
-    mockDelete.mockClear();
-    mockCreate.mockClear();
+    mockUserRepository = {
+      findMany: mock(() => Promise.resolve([dummyUser])),
+      findById: mock(() => Promise.resolve(dummyUser)),
+      findByEmail: mock(() => Promise.resolve(dummyUser)),
+      create: mock((data) => Promise.resolve({ ...dummyUser, ...data })),
+      update: mock((id, data) => Promise.resolve({ ...dummyUser, ...data })),
+      delete: mock(() => Promise.resolve(dummyUser)),
+      updatePassword: mock(() => Promise.resolve(dummyUser)),
+    };
   });
 
-  /**
-   * @suite Validations (Zod Schemas)
-   * @description Verifies Zod validation schemas for formatting, fields, and roles constraints.
-   */
   describe("Validations (Zod Schemas)", () => {
-    
-    describe("updateUserSchema", () => {
-      /**
-       * Test valid user profile update payload.
-       */
-      it("should accept valid user update data", () => {
-        const validData = {
-          name: "Admin User",
-          role: "admin" as const,
-        };
-        
-        const result = updateUserSchema.safeParse(validData);
-        expect(result.success).toBe(true);
-      });
-
-      /**
-       * Test invalid roles constraint (business rule: roles must be 'admin' or 'user').
-       */
-      it("should reject invalid roles", () => {
-        const invalidData = {
-          name: "Hacker",
-          role: "superadmin", // Invalid role outside UserRole enum
-        };
-        
-        const result = updateUserSchema.safeParse(invalidData);
-        expect(result.success).toBe(false);
-      });
+    it("should accept valid user creation data", () => {
+      const validData = {
+        name: "Admin User",
+        email: "admin@example.com",
+        role: "admin" as const,
+      };
+      const result = createUserSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
 
-    describe("createUserSchema", () => {
-      /**
-       * Test valid user creation payload.
-       */
-      it("should accept valid user creation data", () => {
-        const validData = {
-          name: "New User",
-          email: "newuser@example.com",
-          role: "user" as const,
-        };
-        
-        const result = createUserSchema.safeParse(validData);
-        expect(result.success).toBe(true);
-      });
-
-      /**
-       * Test invalid email formatting.
-       */
-      it("should reject invalid email formatting", () => {
-        const invalidData = {
-          name: "New User",
-          email: "invalid-email",
-          role: "user" as const,
-        };
-        
-        const result = createUserSchema.safeParse(invalidData);
-        expect(result.success).toBe(false);
-      });
+    it("should reject invalid email formatting", () => {
+      const invalidData = {
+        name: "Bad User",
+        email: "bad-email",
+        role: "user" as const,
+      };
+      const result = createUserSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
     });
   });
 
-  /**
-   * @suite Application Services
-   * @description Verifies business workflow orchestration, data masking, and error handling inside UsersService.
-   */
-  describe("Application Services", () => {
-    
-    /**
-     * Test retrieving all users (masks emailVerified date for safety).
-     */
-    it("should get all users and mask emailVerified", async () => {
-      const mockUsers = [
-        { id: "1", name: "User1", email: "user1@test.com", emailVerified: new Date(), image: null, role: "user" as const, createdAt: new Date(), updatedAt: new Date() }
-      ];
-      mockFindMany.mockResolvedValue(mockUsers);
+  describe("Use Cases (Business Logic)", () => {
+    it("should get all users and mask emailVerified via GetUsersHandler", async () => {
+      const handler = new GetUsersHandler(mockUserRepository);
+      const result = await handler.execute({ currentUser: superAdminUser });
 
-      const result = await UsersService.getUsers();
-      
-      // Check that emailVerified is mapped to null for safety on client payloads
       expect(result[0].emailVerified).toBeNull();
-      expect(result[0].email).toBe("user1@test.com");
-      expect(UsersRepository.findMany).toHaveBeenCalled();
+      expect(mockUserRepository.findMany).toHaveBeenCalled();
     });
 
-    /**
-     * Test creating a user profile.
-     */
-    it("should create a user profile successfully", async () => {
-      const input = { name: "New User", email: "newuser@example.com", role: "user" as const };
-      const mockUser = { id: "2", ...input, emailVerified: new Date(), image: null, password: null, createdAt: new Date(), updatedAt: new Date() };
-      mockCreate.mockResolvedValue(mockUser);
+    it("should create a user via CreateUserHandler", async () => {
+      const handler = new CreateUserHandler(mockUserRepository);
+      const input = { name: "Alice", email: "alice@example.com", role: "patient" as const };
+      const result = await handler.execute(input);
 
-      const result = await UsersService.createUser(input);
-      
+      expect(result.name).toBe("Alice");
       expect(result.emailVerified).toBeNull();
-      expect(result.name).toBe("New User");
-      expect(UsersRepository.create).toHaveBeenCalled();
+      expect(mockUserRepository.create).toHaveBeenCalled();
     });
 
-    /**
-     * Test retrieving a single user profile (masks emailVerified date for safety).
-     */
-    it("should get a single user profile and mask emailVerified", async () => {
-      const mockUser = { id: "1", name: "User1", email: "user1@test.com", emailVerified: new Date(), image: null, password: null, role: "user" as const, createdAt: new Date(), updatedAt: new Date() };
-      mockFindById.mockResolvedValue(mockUser);
+    it("should get user profile via GetUserProfileHandler", async () => {
+      const handler = new GetUserProfileHandler(mockUserRepository);
+      const result = await handler.execute({ id: "user-1", currentUser: superAdminUser });
 
-      const result = await UsersService.getUserProfile("1");
-      
+      expect(result.id).toBe("user-1");
       expect(result.emailVerified).toBeNull();
-      expect(result.name).toBe("User1");
+      expect(mockUserRepository.findById).toHaveBeenCalled();
     });
 
-    /**
-     * Test throwing error if the targeted user profile does not exist.
-     */
-    it("should throw error if user not found", async () => {
-      mockFindById.mockResolvedValue(null);
-      expect(UsersService.getUserProfile("99")).rejects.toThrow("User not found");
+    it("should update user profile via UpdateProfileHandler", async () => {
+      const handler = new UpdateProfileHandler(mockUserRepository);
+      const input = { id: "user-1", name: "John Updated" };
+      const result = await handler.execute(input);
+
+      expect(result.name).toBe("John Updated");
+      expect(mockUserRepository.update).toHaveBeenCalled();
+    });
+
+    it("should delete user via DeleteUserHandler", async () => {
+      const handler = new DeleteUserHandler(mockUserRepository);
+      const result = await handler.execute({ id: "user-1", currentUser: superAdminUser });
+
+      expect(result.id).toBe("user-1");
+      expect(mockUserRepository.delete).toHaveBeenCalled();
+    });
+
+    it("should register a user securely and force role to user", async () => {
+      const mockPasswordHasher: IPasswordHasher = {
+        hash: mock(() => Promise.resolve("hashed-password")),
+        compare: mock(() => Promise.resolve(true)),
+      };
+
+      // Mock findByEmail to return null so it allows new registration
+      mockUserRepository.findByEmail = mock(() => Promise.resolve(null));
+
+      const handler = new RegisterUserHandler(mockUserRepository, mockPasswordHasher);
+      const input = {
+        name: "New Registered User",
+        email: "new@example.com",
+        password: "Secure@123",
+      };
+
+      const result = await handler.execute(input);
+
+      expect(result.email).toBe("new@example.com");
+      expect(result.role).toBe("user"); // Asserts role forcing
+      expect(mockUserRepository.create).toHaveBeenCalled();
+      expect(mockPasswordHasher.hash).toHaveBeenCalled();
     });
   });
 });

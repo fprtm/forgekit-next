@@ -1,5 +1,5 @@
 import NextAuth, { NextAuthRequest } from "next-auth";
-import authConfig from "./src/config/auth";
+import authConfig from "./src/shared/config/auth";
 import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
@@ -12,10 +12,6 @@ export default auth((req: NextAuthRequest): NextResponse => {
   const isLoggedIn = !!req.auth;
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-
-  if (process.env.TEST_ENV === "playwright") {
-    return NextResponse.next();
-  }
 
   if (isAuthRoute) {
     if (isLoggedIn) return NextResponse.redirect(new URL("/", req.url));

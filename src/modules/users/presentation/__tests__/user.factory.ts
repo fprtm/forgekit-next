@@ -6,8 +6,8 @@
  * @module Users/Presentation/Tests/Factory
  */
 
-import { generateUniqueString } from "@/lib/utils";
-import { UserRole } from "@/config/roles";
+import { generateUniqueString } from "@/shared/lib/utils";
+import { UserRole } from "@/shared/config/roles";
 
 export interface UserFixture {
   name: string;

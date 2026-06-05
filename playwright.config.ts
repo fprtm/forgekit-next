@@ -6,6 +6,7 @@ const baseURL = `http://localhost:${PORT}`;
 process.env.TEST_ENV = "playwright";
 
 export default defineConfig({
+  globalSetup: "./e2e.global-setup.ts",
   testDir: "./src/modules",
   testMatch: "**/*.e2e.ts",
   timeout: 30 * 1000,

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import {
   Form,
   FormControl,
@@ -9,10 +9,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { ProductEntity } from "../../../../domain/types"
-import { useProductForm } from "./use-product-form"
+} from "@/shared/components/ui/form"
+import { Input } from "@/shared/components/ui/input"
+import { ProductEntity } from "../../../../domain/entities/product.entity"
+import { useProductForm } from "../../hooks/use-product-form"
 
 export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
   const { form, onSubmit, isEditing } = useProductForm(initialData)

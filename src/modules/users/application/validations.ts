@@ -1,10 +1,20 @@
 import z from "zod"
-import { UserRole } from "@/config/roles"
+import { UserRole } from "@/shared/config/roles"
 
 export const updateUserSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long"),
   role: z.enum(UserRole),
   email: z.string().email("Invalid email address").optional(),
+  bio: z.string().optional().nullable(),
+  phoneNumber: z.string().optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
+  preferredPronouns: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  country: z.string().optional().nullable(),
+  postalCode: z.string().optional().nullable(),
 })
 
 export const createUserSchema = z.object({

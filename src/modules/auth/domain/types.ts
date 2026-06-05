@@ -1,8 +1,11 @@
-import { UserRole } from "@/config/roles";
+import { UserRole } from "@/shared/config/roles";
 
 export type Action = 
   | 'users:create' | 'users:read' | 'users:update' | 'users:delete'
-  | 'products:create' | 'products:read' | 'products:update' | 'products:delete';
+  | 'products:create' | 'products:read' | 'products:update' | 'products:delete'
+  | 'notifications:read' | 'notifications:write'
+  | 'settings:read' | 'settings:write'
+  | 'impersonate';
 
 export interface AuthUser {
   id: string;

@@ -1,9 +1,20 @@
 import { NextRequest } from "next/server"
-import { apiSuccess, apiError } from "@/lib/api-response"
-import { ProductsService } from "../../application/services"
-import { auth } from "@/lib/auth"
-import { can } from "@/modules/auth/domain/policies"
+import { apiSuccess, apiError, handleApiError } from "@/shared/lib/api-response"
+import { DrizzleProductRepository } from "../../infrastructure/database/repositories/drizzle-product.repository"
+import { GetProductsHandler } from "../../application/use-cases/get-products/get-products.handler"
+import { CreateProductHandler } from "../../application/use-cases/create-product/create-product.handler"
+import { GetProductHandler } from "../../application/use-cases/get-product/get-product.handler"
+import { UpdateProductHandler } from "../../application/use-cases/update-product/update-product.handler"
+import { DeleteProductHandler } from "../../application/use-cases/delete-product/delete-product.handler"
+import { auth } from "@/shared/lib/auth"
 import { AuthUser } from "@/modules/auth/domain/types"
+
+const productRepo = new DrizzleProductRepository()
+const getProductsUC = new GetProductsHandler(productRepo)
+const createProductUC = new CreateProductHandler(productRepo)
+const getProductUC = new GetProductHandler(productRepo)
+const updateProductUC = new UpdateProductHandler(productRepo)
+const deleteProductUC = new DeleteProductHandler(productRepo)
 
 export async function getProductsHandler(req: NextRequest) {
   try {
@@ -12,16 +23,12 @@ export async function getProductsHandler(req: NextRequest) {
     const limit = Number(searchParams.get("limit") ?? 10)
 
     const session = await auth()
-    const user = session?.user ? { id: session.user.id, role: session.user.role } : null
-    
-    if (user && !can(user, "products:read")) {
-      return apiError("Forbidden", 403)
-    }
+    const user = session?.user ? { id: session.user.id, role: session.user.role } : undefined
 
-    const data = await ProductsService.getProducts(search, limit)
+    const data = await getProductsUC.execute({ search, limit, user })
     return apiSuccess(data)
-  } catch {
-    return apiError("Internal server error", 500)
+  } catch (error: unknown) {
+    return handleApiError(error, "GET_PRODUCTS")
   }
 }
 
@@ -35,39 +42,27 @@ export async function createProductHandler(req: NextRequest) {
       if (!session) {
         return apiError("Unauthorized", 401)
       }
-      
       authUser = { id: session.user.id, role: session.user.role }
-      if (!can(authUser, "products:create")) {
-        return apiError("Forbidden", 403)
-      }
     }
 
     const body = await req.json()
-    const created = await ProductsService.createProduct(body, authUser)
+    const created = await createProductUC.execute({ ...body, user: authUser })
     return apiSuccess(created, 201)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Forbidden" ? 403 : 400
-    return apiError(message, status)
+    return handleApiError(error, "CREATE_PRODUCT")
   }
 }
 
 export async function getProductByIdHandler(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
-    const user = session?.user ? { id: session.user.id, role: session.user.role } : null
-    
-    if (user && !can(user, "products:read")) {
-      return apiError("Forbidden", 403)
-    }
+    const user = session?.user ? { id: session.user.id, role: session.user.role } : undefined
 
     const { id } = await props.params
-    const product = await ProductsService.getProductById(id)
+    const product = await getProductUC.execute({ id, user })
     return apiSuccess(product)
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === "Product not found") return apiError(error.message, 404)
-    if (error instanceof Error && error.message === "Forbidden") return apiError(error.message, 403)
-    return apiError("Internal server error", 500)
+    return handleApiError(error, "GET_PRODUCT")
   }
 }
 
@@ -81,21 +76,15 @@ export async function updateProductHandler(req: NextRequest, props: { params: Pr
       if (!session) {
         return apiError("Unauthorized", 401)
       }
-      
       authUser = { id: session.user.id, role: session.user.role }
-      if (!can(authUser, "products:update")) {
-        return apiError("Forbidden", 403)
-      }
     }
 
     const { id } = await props.params
     const body = await req.json()
-    const updated = await ProductsService.updateProduct(id, body, authUser)
+    const updated = await updateProductUC.execute({ id, ...body, user: authUser })
     return apiSuccess(updated)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Product not found" ? 404 : (message === "Forbidden" ? 403 : 400)
-    return apiError(message, status)
+    return handleApiError(error, "UPDATE_PRODUCT")
   }
 }
 
@@ -109,19 +98,13 @@ export async function deleteProductHandler(req: NextRequest, props: { params: Pr
       if (!session) {
         return apiError("Unauthorized", 401)
       }
-      
       authUser = { id: session.user.id, role: session.user.role }
-      if (!can(authUser, "products:delete")) {
-        return apiError("Forbidden", 403)
-      }
     }
 
     const { id } = await props.params
-    await ProductsService.deleteProduct(id, authUser)
+    await deleteProductUC.execute({ id, user: authUser })
     return apiSuccess({ deleted: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Product not found" ? 404 : (message === "Forbidden" ? 403 : 500)
-    return apiError(message, status)
+    return handleApiError(error, "DELETE_PRODUCT")
   }
 }

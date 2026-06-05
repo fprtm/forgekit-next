@@ -1,10 +1,10 @@
 import { ProductTable } from "../components/table"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { ProductEntity } from "../../../domain/types"
+import { ProductEntity } from "../../../domain/entities/product.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
-import Wrapper from "@/components/layout/wrapper"
+import Wrapper from "@/shared/components/layout/wrapper"
 
 export function ProductListPage({
   products,
@@ -19,7 +19,7 @@ export function ProductListPage({
         <h1 className="text-3xl font-bold tracking-tight">Products</h1>
         <PermissionGate action="products:create" user={currentUser}>
           <Button asChild>
-            <Link href="/products/create">Create Product</Link>
+            <Link href="/d/products/create">Create Product</Link>
           </Button>
         </PermissionGate>
       </div>
