@@ -1,9 +1,13 @@
 import { DomainEvent } from "../../domain/events/domain.event";
+import { logger } from "@/shared/lib/logger";
+
+
 
 type EventHandler<T extends DomainEvent> = (event: T) => Promise<void> | void;
 
 export class EventDispatcher {
   private static instance: EventDispatcher;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private handlers: Map<string, EventHandler<any>[]> = new Map();
 
   private constructor() {}
@@ -43,5 +47,5 @@ if (typeof window === "undefined") {
     import("@/modules/notifications/application/services/notification.listener"),
     import("@/modules/notifications/application/services/notification-email.listener"),
     import("@/modules/notifications/application/services/notification-whatsapp.listener"),
-  ]).catch(console.error);
+  ]).catch((err) => logger.error({ err }, "Event listener registration failed"));
 }
