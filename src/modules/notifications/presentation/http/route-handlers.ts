@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { apiSuccess, apiError } from "@/shared/lib/api-response"
+import { apiSuccess, apiError, handleApiError } from "@/shared/lib/api-response"
 import { auth } from "@/shared/lib/auth"
 import { DrizzleNotificationRepository } from "../../infrastructure/database/repositories/drizzle-notification.repository"
 import { DrizzleSettingRepository } from "@/modules/setting/infrastructure/database/repositories/drizzle-setting.repository"
@@ -29,8 +29,7 @@ export async function getNotificationsHandler(req: NextRequest) {
     const data = await getNotificationsUC.execute({ userId: session.user.id, limit: limit + 1, offset })
     return apiSuccess(data)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "GET_NOTIFICATIONS")
   }
 }
 
@@ -54,8 +53,7 @@ export async function createNotificationHandler(req: NextRequest) {
 
     return apiSuccess(notification, 201)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 400)
+    return handleApiError(error, "CREATE_NOTIFICATION")
   }
 }
 
@@ -67,8 +65,7 @@ export async function getUnreadCountHandler(_req: NextRequest) {
     const count = await getUnreadCountUC.execute({ userId: session.user.id })
     return apiSuccess({ unreadCount: count })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "GET_UNREAD_COUNT")
   }
 }
 
@@ -81,8 +78,7 @@ export async function markAsReadHandler(_req: NextRequest, props: { params: Prom
     await notificationRepo.markAsRead(id)
     return apiSuccess({ success: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "MARK_AS_READ")
   }
 }
 
@@ -94,8 +90,7 @@ export async function markAllAsReadHandler(_req: NextRequest) {
     await markAllReadUC.execute({ userId: session.user.id })
     return apiSuccess({ success: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "MARK_ALL_READ")
   }
 }
 
@@ -107,8 +102,7 @@ export async function getSettingsHandler(_req: NextRequest) {
     const settings = await notificationRepo.findSettingsByUserId(session.user.id)
     return apiSuccess(settings || { email: true, push: true, whatsapp: true, system: true, security: true, marketing: true, product: true, general: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "GET_SETTINGS")
   }
 }
 
@@ -128,8 +122,7 @@ export async function updateSettingsHandler(req: NextRequest) {
 
     return apiSuccess(settings)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 400)
+    return handleApiError(error, "UPDATE_SETTINGS")
   }
 }
 
@@ -141,7 +134,6 @@ export async function deleteAllNotificationsHandler(_req: NextRequest) {
     await notificationRepo.deleteAllByUserId(session.user.id)
     return apiSuccess({ success: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    return apiError(message, 500)
+    return handleApiError(error, "DELETE_ALL_NOTIFICATIONS")
   }
 }

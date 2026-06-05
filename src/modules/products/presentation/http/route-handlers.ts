@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { apiSuccess, apiError } from "@/shared/lib/api-response"
+import { apiSuccess, apiError, handleApiError } from "@/shared/lib/api-response"
 import { DrizzleProductRepository } from "../../infrastructure/database/repositories/drizzle-product.repository"
 import { GetProductsHandler } from "../../application/use-cases/get-products/get-products.handler"
 import { CreateProductHandler } from "../../application/use-cases/create-product/create-product.handler"
@@ -24,13 +24,11 @@ export async function getProductsHandler(req: NextRequest) {
 
     const session = await auth()
     const user = session?.user ? { id: session.user.id, role: session.user.role } : undefined
-    
+
     const data = await getProductsUC.execute({ search, limit, user })
     return apiSuccess(data)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Forbidden" ? 403 : 500
-    return apiError(message, status)
+    return handleApiError(error, "GET_PRODUCTS")
   }
 }
 
@@ -51,9 +49,7 @@ export async function createProductHandler(req: NextRequest) {
     const created = await createProductUC.execute({ ...body, user: authUser })
     return apiSuccess(created, 201)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Forbidden" ? 403 : 400
-    return apiError(message, status)
+    return handleApiError(error, "CREATE_PRODUCT")
   }
 }
 
@@ -66,9 +62,7 @@ export async function getProductByIdHandler(req: NextRequest, props: { params: P
     const product = await getProductUC.execute({ id, user })
     return apiSuccess(product)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Product not found" ? 404 : (message === "Forbidden" ? 403 : 500)
-    return apiError(message, status)
+    return handleApiError(error, "GET_PRODUCT")
   }
 }
 
@@ -90,9 +84,7 @@ export async function updateProductHandler(req: NextRequest, props: { params: Pr
     const updated = await updateProductUC.execute({ id, ...body, user: authUser })
     return apiSuccess(updated)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Product not found" ? 404 : (message === "Forbidden" ? 403 : 400)
-    return apiError(message, status)
+    return handleApiError(error, "UPDATE_PRODUCT")
   }
 }
 
@@ -113,8 +105,6 @@ export async function deleteProductHandler(req: NextRequest, props: { params: Pr
     await deleteProductUC.execute({ id, user: authUser })
     return apiSuccess({ deleted: true })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "Product not found" ? 404 : (message === "Forbidden" ? 403 : 500)
-    return apiError(message, status)
+    return handleApiError(error, "DELETE_PRODUCT")
   }
 }

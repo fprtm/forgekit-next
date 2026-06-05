@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { apiSuccess, apiError } from "@/shared/lib/api-response";
+import { apiSuccess, apiError, handleApiError } from "@/shared/lib/api-response";
 import { DrizzleSettingRepository } from "../../infrastructure/database/repositories/drizzle-setting.repository";
 import { GetSettingHandler } from "../../application/use-cases/get-setting/get-setting.handler";
 import { UpdateSettingHandler } from "../../application/use-cases/update-setting/update-setting.handler";
@@ -31,8 +31,7 @@ export async function getSettingsHandler(req: NextRequest) {
     const data = await settingRepo.findAll();
     return apiSuccess(data);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return apiError(message, 500);
+    return handleApiError(error, "GET_SETTINGS");
   }
 }
 
@@ -55,7 +54,6 @@ export async function updateSettingHandler(req: NextRequest) {
     const updated = await updateSettingUC.execute({ key, value });
     return apiSuccess(updated);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return apiError(message, 500);
+    return handleApiError(error, "UPDATE_SETTING");
   }
 }
