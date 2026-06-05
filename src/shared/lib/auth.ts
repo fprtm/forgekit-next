@@ -9,6 +9,8 @@ import { BcryptPasswordHasher } from "@/modules/auth/infrastructure/services/bcr
 import { UserRole } from "@/modules/users/domain/entities/user.entity";
 import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
+import { loginLimiter } from "@/shared/lib/rate-limit";
+import { logger } from "@/shared/lib/logger";
 
 const userRepo = new DrizzleUserRepository();
 const passwordHasher = new BcryptPasswordHasher();
@@ -26,8 +28,14 @@ const nextAuthResult = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const ip = request?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+        const { success } = await loginLimiter.limit(ip);
+        if (!success) {
           return null;
         }
 
@@ -52,8 +60,8 @@ const nextAuthResult = NextAuth({
   callbacks: {
     async jwt({ token, user }: { token: JWT, user: User }) {
       if (user) {
-        token.id = user.id
-        token.role = user.role as UserRole
+        if (user.id) token.id = user.id
+        token.role = user.role
       }
 
       try {
@@ -76,7 +84,7 @@ const nextAuthResult = NextAuth({
           }
         } else if (!impersonateTarget && token.originalUserId) {
           token.id = token.originalUserId;
-          token.role = token.originalUserRole;
+          token.role = token.originalUserRole as UserRole;
           delete token.originalUserId;
           delete token.originalUserRole;
 
@@ -87,7 +95,7 @@ const nextAuthResult = NextAuth({
           }
         }
       } catch (e) {
-        console.error("Error in NextAuth JWT callback:", e);
+        logger.error({ err: e }, "Error in NextAuth JWT callback");
       }
 
       return token
