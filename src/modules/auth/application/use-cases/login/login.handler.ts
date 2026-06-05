@@ -1,12 +1,14 @@
 import { signIn } from "@/shared/lib/auth"
 import { LoginCommand } from "./login.command"
 import { loginSchema } from "../../../domain/validations"
+import { InvalidInputException } from "@/shared/domain/exceptions/invalid-input.exception"
+import { InvalidCredentialsException } from "../../../domain/exceptions/auth.exceptions"
 
 export class LoginHandler {
   async execute(command: LoginCommand): Promise<{ success: boolean }> {
     const parsed = loginSchema.safeParse(command)
     if (!parsed.success) {
-      throw new Error("Invalid input data")
+      throw new InvalidInputException("Invalid input data")
     }
 
     try {
@@ -16,8 +18,8 @@ export class LoginHandler {
         redirect: false,
       })
       return { success: true }
-    } catch (error) {
-      throw new Error("Invalid credentials or authentication failed")
+    } catch {
+      throw new InvalidCredentialsException()
     }
   }
 }

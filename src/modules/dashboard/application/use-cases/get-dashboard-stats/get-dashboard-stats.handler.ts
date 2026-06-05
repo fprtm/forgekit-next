@@ -1,3 +1,5 @@
+import { UnauthorizedException } from "@/shared/domain/exceptions/unauthorized.exception";
+
 export interface DashboardStats {
   totalUsers: number;
   totalProducts: number;
@@ -17,7 +19,7 @@ export class GetDashboardStatsHandler {
 
   async execute(currentUserRole: string): Promise<DashboardStats> {
     if (currentUserRole !== "super_admin" && currentUserRole !== "admin") {
-      throw new Error("Unauthorized: Only admin or super_admin can view dashboard stats");
+      throw new UnauthorizedException("Only admin or super_admin can view dashboard stats");
     }
 
     const [totalUsers, totalProducts, totalAuditLogs, recentLogs] = await Promise.all([
