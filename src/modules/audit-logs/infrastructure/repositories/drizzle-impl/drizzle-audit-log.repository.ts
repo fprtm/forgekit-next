@@ -21,6 +21,7 @@ export class DrizzleAuditLogRepository implements IAuditLogRepository {
     return {
       ...createdLog,
       action: createdLog.action as AuditLogAction,
+      details: createdLog.details as Record<string, unknown>,
     };
   }
 
@@ -55,6 +56,7 @@ export class DrizzleAuditLogRepository implements IAuditLogRepository {
     return logs.map((log) => ({
       ...log,
       action: log.action as AuditLogAction,
+      details: log.details as Record<string, unknown>,
     }));
   }
 
@@ -70,6 +72,7 @@ export class DrizzleAuditLogRepository implements IAuditLogRepository {
     return {
       ...log,
       action: log.action as AuditLogAction,
+      details: log.details as Record<string, unknown>,
     };
   }
 

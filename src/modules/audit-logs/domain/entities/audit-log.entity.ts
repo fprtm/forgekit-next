@@ -1,4 +1,4 @@
-export type AuditLogAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | "REGISTER" | "SYSTEM";
+export type AuditLogAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | "REGISTER" | "SYSTEM" | "SEND" | "READ" | "IMPERSONATE" | "ACCESS" | "PURGE";
 
 export interface AuditLogEntity {
   id: string;
@@ -6,7 +6,7 @@ export interface AuditLogEntity {
   entityName: string;      // e.g., "User", "Product", "Setting"
   entityId?: string | null; // ID of the entity that was affected
   actorId: string;         // ID of the user who performed the action, or "SYSTEM"
-  details: any;            // JSON payload containing the changes or additional context
+  details: Record<string, unknown>;
   ipAddress?: string | null;
   createdAt: Date;
 }
