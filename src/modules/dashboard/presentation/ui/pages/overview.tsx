@@ -1,10 +1,10 @@
 import React from "react";
-import { 
-  TrendingUp, 
-  Users as UsersIcon, 
-  ShoppingBag, 
-  CreditCard, 
-  ArrowUpRight, 
+import {
+  TrendingUp,
+  Users as UsersIcon,
+  ShoppingBag,
+  CreditCard,
+  ArrowUpRight,
   Activity,
   Layers,
   Database,
@@ -14,11 +14,8 @@ import {
   Clock
 } from "lucide-react";
 import { siteConfig } from "@/shared/config/site";
-import { db } from "@/db";
-import { users } from "@/modules/users/infrastructure/database/drizzle/schema";
-import { products } from "@/modules/products/infrastructure/database/drizzle/schema";
-import { desc } from "drizzle-orm";
 import Wrapper from "@/shared/components/layout/wrapper";
+import { getDashboardStatsAction } from "../../http/actions/dashboard.actions";
 
 function formatRelativeTime(date: Date) {
   const now = new Date();
@@ -32,14 +29,11 @@ function formatRelativeTime(date: Date) {
 }
 
 export default async function DashboardOverviewPage() {
-  // Fetch actual data from database
-  const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
-  const allProducts = await db.select().from(products).orderBy(desc(products.createdAt));
+  const statsResult = await getDashboardStatsAction();
+  const totalUsersCount = statsResult.success ? statsResult.data.totalUsers : 0;
+  const totalProductsCount = statsResult.success ? statsResult.data.totalProducts : 0;
+  const recentLogs = statsResult.success ? statsResult.data.recentLogs : [];
 
-  const totalUsersCount = allUsers.length;
-  const totalProductsCount = allProducts.length;
-
-  // Dynamically compute mock stats scaled with real database counts
   const activeOps = (totalUsersCount * 8) + (totalProductsCount * 15) + 142;
   const formattedRevenue = (totalProductsCount * 1250 + 24500).toLocaleString("en-US", {
     style: "currency",
@@ -77,33 +71,19 @@ export default async function DashboardOverviewPage() {
     },
   ];
 
-  // Merge real database records into recent activities stream
-  const recentUsers = allUsers.slice(0, 3).map(u => ({
-    name: u.name || "Unnamed User",
-    email: u.email || "No email provided",
-    action: "Registered user account",
-    time: formatRelativeTime(u.createdAt),
-    initial: (u.name || "US").substring(0, 2).toUpperCase(),
+  const activities = recentLogs.slice(0, 4).map((log) => ({
+    name: `${log.entityName}:${log.action}`,
+    email: "",
+    action: log.action,
+    time: formatRelativeTime(log.createdAt),
+    initial: log.entityName.substring(0, 2).toUpperCase(),
     badgeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
   }));
 
-  const recentProducts = allProducts.slice(0, 3).map(p => ({
-    name: p.name,
-    email: `$${p.price.toLocaleString()}`,
-    action: "Added to Product catalog",
-    time: formatRelativeTime(p.createdAt),
-    initial: "PR",
-    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-  }));
-
-  // Combine, sort, and slice for recent operations stream
-  const activities = [...recentUsers, ...recentProducts].slice(0, 4);
-
-  // Dynamic daily transaction heights scaled by database content
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const baseWeights = [45, 70, 55, 90, 60, 35, 80];
   const scale = 1 + (totalUsersCount + totalProductsCount) * 0.03;
-  
+
   const weeklyData = daysOfWeek.map((day, index) => {
     const rawVal = Math.round(baseWeights[index] * scale);
     return {
@@ -115,7 +95,6 @@ export default async function DashboardOverviewPage() {
 
   return (
     <Wrapper>
-      {/* Welcome Header */}
       <div>
         <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
           Overview
@@ -125,12 +104,11 @@ export default async function DashboardOverviewPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div 
+            <div
               key={stat.title}
               className="group relative overflow-hidden rounded border border-zinc-200/60 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950/40 backdrop-blur-md transition-all hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700"
             >
@@ -156,9 +134,7 @@ export default async function DashboardOverviewPage() {
         })}
       </div>
 
-      {/* Lower Dashboard Section: Chart & Recent Activity */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Beautiful Dynamic CSS-based Weekly Activity Chart */}
         <div className="lg:col-span-2 rounded border border-zinc-200/60 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950/40 backdrop-blur-md flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
@@ -177,19 +153,17 @@ export default async function DashboardOverviewPage() {
           </div>
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-            {/* Chart Area (3/4 of panel) */}
             <div className="md:col-span-3 flex items-end justify-between gap-2.5 h-48 px-2 border-b border-zinc-100 dark:border-zinc-800 pb-1">
               {weeklyData.map((bar) => (
                 <div key={bar.day} className="flex flex-col items-center justify-end h-full flex-1 group">
-                  <div 
-                    style={{ height: bar.height }} 
+                  <div
+                    style={{ height: bar.height }}
                     className="relative w-full flex flex-col justify-end items-center"
                   >
-                    {/* Tooltip on hover */}
                     <span className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-zinc-900 text-white text-[10px] font-semibold px-2 py-1 rounded-lg pointer-events-none shadow-sm dark:bg-white dark:text-black whitespace-nowrap z-10">
                       {bar.value}k ops
                     </span>
-                    <div 
+                    <div
                       className="w-full max-w-[32px] h-full rounded-t-lg bg-gradient-to-t from-zinc-200 to-zinc-900 dark:from-zinc-900 dark:to-zinc-100/90 transition-all duration-300 group-hover:scale-x-105 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] cursor-pointer"
                     />
                   </div>
@@ -198,7 +172,6 @@ export default async function DashboardOverviewPage() {
               ))}
             </div>
 
-            {/* Performance Stats Panel (1/4 of panel) */}
             <div className="flex flex-col gap-4 border-l border-zinc-100 dark:border-zinc-800/80 pl-4 pb-2">
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Avg Latency</span>
@@ -225,7 +198,6 @@ export default async function DashboardOverviewPage() {
           </div>
         </div>
 
-        {/* Recent Activity Section */}
         <div className="rounded border border-zinc-200/60 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950/40 backdrop-blur-md flex flex-col justify-between">
           <div>
             <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -269,7 +241,6 @@ export default async function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* System Integrity & Core Architecture Status */}
       <div className="rounded border border-zinc-200/60 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950/40 backdrop-blur-md">
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">
           Core System Health (4-Layer DDD Validation)
