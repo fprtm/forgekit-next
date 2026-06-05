@@ -125,6 +125,11 @@ describe("Notifications - Unit Tests", () => {
         email: false,
         push: false,
         whatsapp: false,
+        system: true,
+        security: true,
+        marketing: true,
+        product: true,
+        general: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       }));

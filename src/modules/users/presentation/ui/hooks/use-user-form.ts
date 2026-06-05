@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -27,7 +27,7 @@ export function useUserForm(initialData?: UserEntity) {
   const isEditing = !!initialData
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema),
+    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema) as unknown as Resolver<UserFormValues>,
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",

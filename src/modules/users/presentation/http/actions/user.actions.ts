@@ -9,7 +9,7 @@ import { UpdateProfileHandler } from "../../../application/use-cases/update-prof
 import { DeleteUserHandler } from "../../../application/use-cases/delete-user/delete-user.handler"
 import { RegisterUserHandler } from "../../../application/use-cases/register-user/register-user.handler"
 import { BcryptPasswordHasher } from "@/modules/auth/infrastructure/services/bcrypt-password-hasher"
-import { UserEntity } from "../../../domain/entities/user.entity"
+import { UserEntity, UserRole } from "../../../domain/entities/user.entity"
 import { CreateUserCommand } from "../../../application/use-cases/create-user/create-user.command"
 import { UpdateProfileCommand } from "../../../application/use-cases/update-profile/update-profile.command"
 import { RegisterUserCommand } from "../../../application/use-cases/register-user/register-user.command"
@@ -140,7 +140,7 @@ export async function registerUserAction(
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role as any,
+        role: user.role as UserRole,
         createdAt: user.createdAt,
         updatedAt: user.createdAt,
         image: null

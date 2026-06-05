@@ -10,7 +10,7 @@ export class DrizzleUserRepository implements IUserRepository {
     return results as unknown as UserEntity[]
   }
 
-  async create(data: any): Promise<UserEntity> {
+  async create(data: Partial<UserEntity>): Promise<UserEntity> {
     const [created] = await db.insert(users).values(data).returning()
     return created as unknown as UserEntity
   }
@@ -29,7 +29,7 @@ export class DrizzleUserRepository implements IUserRepository {
     return (result as unknown as UserEntity) ?? null
   }
 
-  async update(id: string, data: any): Promise<UserEntity> {
+  async update(id: string, data: Partial<UserEntity>): Promise<UserEntity> {
     const [updated] = await db
       .update(users)
       .set(data)

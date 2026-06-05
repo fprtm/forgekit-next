@@ -117,21 +117,21 @@ export default function Home() {
             {/* Simulated UI Area */}
             <div className="p-8 text-left grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
               <div className="p-5 rounded-lg border border-zinc-900 bg-zinc-950/30">
-                <div className="text-zinc-500 mb-2">// 4-LAYER CLEAN TAXONOMY</div>
+                <div className="text-zinc-500 mb-2">{'// 4-LAYER CLEAN TAXONOMY'}</div>
                 <div className="text-indigo-400 font-bold mb-4">Domain Logic Core</div>
                 <div className="text-zinc-400 font-light leading-relaxed">
                   Pure entities decoupled from Next.js, database ORMs, or validation libraries. Completely unit-testable.
                 </div>
               </div>
               <div className="p-5 rounded-lg border border-zinc-900 bg-zinc-950/30">
-                <div className="text-zinc-500 mb-2">// DYNAMIC SEEDER ENGINE</div>
+                <div className="text-zinc-500 mb-2">{'// DYNAMIC SEEDER ENGINE'}</div>
                 <div className="text-purple-400 font-bold mb-4">Modular Seeding</div>
                 <div className="text-zinc-400 font-light leading-relaxed">
                   Decoupled <code className="text-purple-300">seeder.ts</code> per module, dynamically auto-detected and run with full type-safety.
                 </div>
               </div>
               <div className="p-5 rounded-lg border border-zinc-900 bg-zinc-950/30">
-                <div className="text-zinc-500 mb-2">// SECURITY ENFORCED</div>
+                <div className="text-zinc-500 mb-2">{'// SECURITY ENFORCED'}</div>
                 <div className="text-emerald-400 font-bold mb-4">Adaptive Credentials</div>
                 <div className="text-zinc-400 font-light leading-relaxed">
                   Generic OAuth flags combined with strict role guards at the use-case layer to block privilege leaks.
