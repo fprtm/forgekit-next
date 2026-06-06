@@ -1,8 +1,6 @@
 export const UserRole = [
   "super_admin",
   "admin",
-  "therapist",
-  "patient",
-  "guest",
+  "user",
 ] as const;
 export type UserRole = (typeof UserRole)[number];

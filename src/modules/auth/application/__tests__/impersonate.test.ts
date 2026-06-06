@@ -38,7 +38,7 @@ describe("Auth Impersonate - Unit Tests", () => {
     email: "user@example.com",
     emailVerified: new Date(),
     image: null,
-    role: "patient",
+    role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),
   };

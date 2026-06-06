@@ -11,7 +11,7 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
     email: "john@example.com",
     emailVerified: new Date(),
     image: null,
-    role: "patient",
+    role: "user",
     password: "hashed-password",
     createdAt: new Date(),
     updatedAt: new Date(),

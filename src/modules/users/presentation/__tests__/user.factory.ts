@@ -31,6 +31,6 @@ export function createUserFixture(prefix = "User"): UserFixture {
   return {
     name: uniqueName,
     email: uniqueEmail,
-    role: "guest",
+    role: "user",
   };
 }

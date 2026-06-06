@@ -3,36 +3,29 @@ import { UserRole } from "@/shared/config/roles";
 import { Action, AuthUser, ResourceContext } from "./types";
 
 let ROLE_PERMISSIONS: Record<UserRole, string[]> = {
-  therapist: [
+  super_admin: ["**"],
+  admin: [
+    "users:create",
     "users:read",
+    "users:update",
+    "users:delete",
+    "products:create",
     "products:read",
     "products:update",
     "products:delete",
-    "appointments:create",
-    "appointments:read",
-    "appointments:update",
-    "appointments:delete",
-    "consultation:read",
-    "consultation:update",
     "notifications:read",
     "notifications:write",
     "settings:read",
     "settings:write",
   ],
-  patient: [
-    "services:read",
-    "schedules:read",
-    "appointments:create",
-    "appointments:read",
-    "appointments:update",
-    "appointments:delete",
-    "consultation:read",
+  user: [
+    "products:read",
+    "products:create",
+    "products:update",
+    "products:delete",
     "notifications:read",
     "notifications:write",
   ],
-  super_admin: ["**"],
-  admin: ["**"],
-  guest: [],
 };
 
 let SUPER_ROLES: UserRole[] = ["super_admin"];

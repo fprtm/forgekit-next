@@ -32,7 +32,7 @@ export function useUserForm(initialData?: UserEntity) {
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",
-      role: initialData?.role || "patient",
+      role: initialData?.role || "user",
       bio: initialData?.profile?.bio || "",
       phoneNumber: initialData?.profile?.phoneNumber || "",
       dateOfBirth: initialData?.profile?.dateOfBirth || "",
@@ -70,9 +70,7 @@ export function useUserForm(initialData?: UserEntity) {
       const redirectMap: Record<UserRole, string> = {
         super_admin: "/d/users/admins",
         admin: "/d/users/admins",
-        therapist: "/d/users/admins",
-        patient: "/d/users/users",
-        guest: "/d/users/users",
+        user: "/d/users/users",
       }
 
       const redirectPath = redirectMap[data.role]

@@ -37,7 +37,7 @@ export class RegisterUserHandler {
       name: parsed.name,
       email: parsed.email,
       password: hashedPassword,
-      role: "patient",
+      role: "user",
     })
 
     await eventDispatcher.dispatch(

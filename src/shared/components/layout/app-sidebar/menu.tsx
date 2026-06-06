@@ -97,7 +97,7 @@ const isUserAllowed = (
 ): boolean => {
   if (item.requiredAction) {
     const authUser: AuthUser | null = user
-      ? { id: user.id || "", role: (user.role as UserRole) || "guest" }
+      ? { id: user.id || "", role: (user.role as UserRole) || "user" }
       : null;
     return can(authUser, item.requiredAction);
   }
