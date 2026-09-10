@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { createProductFixture } from "./product.factory";
 import { loginAsSuperAdmin } from "@/shared/tests/e2e-helpers";
+import { routes } from "@/shared/config/routes";
 
 test.describe.serial("Products Module E2E", () => {
   test.beforeEach(async ({ page }) => {
@@ -11,7 +12,7 @@ test.describe.serial("Products Module E2E", () => {
   let editedProductName: string;
 
   test("should navigate to products page and display the list", async ({ page }) => {
-    await page.goto("/d/products");
+    await page.goto(routes.dashboard.products.list);
 
     await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
 
@@ -24,7 +25,7 @@ test.describe.serial("Products Module E2E", () => {
     const productData = createProductFixture("E2E Product");
     uniqueProductName = productData.name;
 
-    await page.goto("/d/products/create");
+    await page.goto(routes.dashboard.products.create);
     await page.getByLabel("Product Name").fill(uniqueProductName);
     await page.getByLabel("Price").fill(productData.price);
     await page.getByRole("button", { name: "Create Product" }).click();
@@ -35,7 +36,7 @@ test.describe.serial("Products Module E2E", () => {
   });
 
   test("should successfully edit a product", async ({ page }) => {
-    await page.goto("/d/products");
+    await page.goto(routes.dashboard.products.list);
 
     await page.waitForTimeout(1000);
 
@@ -67,7 +68,7 @@ test.describe.serial("Products Module E2E", () => {
   });
 
   test("should successfully delete a product", async ({ page }) => {
-    await page.goto("/d/products");
+    await page.goto(routes.dashboard.products.list);
 
     await page.waitForTimeout(1000);
 
@@ -86,7 +87,7 @@ test.describe.serial("Products Module E2E", () => {
   });
 
   test("should show validation errors on empty form submit", async ({ page }) => {
-    await page.goto("/d/products/create");
+    await page.goto(routes.dashboard.products.create);
     await page.getByRole("button", { name: "Create Product" }).click();
 
     await expect(

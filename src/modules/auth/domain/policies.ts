@@ -2,33 +2,31 @@
 import { UserRole } from "@/shared/config/roles";
 import { Action, AuthUser, ResourceContext } from "./types";
 
+let ROLE_HIERARCHY: Record<UserRole, UserRole[]> = {
+  super_admin: ["admin", "user"],
+  admin: ["user"],
+  user: [],
+};
+
 let ROLE_PERMISSIONS: Record<UserRole, string[]> = {
-  super_admin: ["**"],
+  super_admin: ["impersonate"],
   admin: [
     "users:create",
     "users:read",
     "users:update",
     "users:delete",
-    "products:create",
-    "products:read",
-    "products:update",
-    "products:delete",
-    "notifications:read",
-    "notifications:write",
     "settings:read",
     "settings:write",
   ],
   user: [
-    "products:read",
     "products:create",
+    "products:read",
     "products:update",
     "products:delete",
     "notifications:read",
     "notifications:write",
   ],
 };
-
-let SUPER_ROLES: UserRole[] = ["super_admin"];
 
 export type ResourceValidator = (
   user: AuthUser,
@@ -37,13 +35,53 @@ export type ResourceValidator = (
 
 const validators: Record<string, ResourceValidator> = {};
 
+export function getEffectivePermissions(role: UserRole): string[] {
+  const inheritedRoles = ROLE_HIERARCHY[role] ?? [];
+  const permissions = new Set<string>(ROLE_PERMISSIONS[role] ?? []);
+
+  for (const inheritedRole of inheritedRoles) {
+    for (const permission of ROLE_PERMISSIONS[inheritedRole] ?? []) {
+      permissions.add(permission);
+    }
+  }
+
+  return Array.from(permissions);
+}
+
+export function matchPermission(pattern: string, action: string): boolean {
+  if (pattern === "**") return true;
+  if (pattern.endsWith(":*")) {
+    return action.startsWith(pattern.slice(0, -1));
+  }
+  return pattern === action;
+}
+
+/**
+ * Roles that sit at the top of the hierarchy (i.e. are not inherited by any
+ * other role) bypass ABAC/ownership validation entirely — they can act on
+ * any resource. This generalizes the old `SUPER_ROLES` array using the
+ * hierarchy structure itself.
+ */
+function isTopLevelRole(role: UserRole): boolean {
+  const allRoles = Object.keys(ROLE_HIERARCHY) as UserRole[];
+  const inheritedRoles = new Set<UserRole>();
+
+  for (const parentRole of allRoles) {
+    for (const inherited of ROLE_HIERARCHY[parentRole] ?? []) {
+      inheritedRoles.add(inherited);
+    }
+  }
+
+  return !inheritedRoles.has(role);
+}
+
 export const authPolicies = {
   setPermissions(permissions: Record<UserRole, string[]>) {
     ROLE_PERMISSIONS = { ...permissions };
   },
 
-  setSuperRoles(roles: UserRole[]) {
-    SUPER_ROLES = [...roles];
+  setHierarchy(hierarchy: Record<UserRole, UserRole[]>) {
+    ROLE_HIERARCHY = { ...hierarchy };
   },
 
   registerValidator(action: Action | string, validator: ResourceValidator) {
@@ -91,12 +129,16 @@ export function can(
     return false;
   }
 
-  const permissions = ROLE_PERMISSIONS[user.role];
-  if (!permissions || !permissions.includes(action)) {
+  const effectivePermissions = getEffectivePermissions(user.role);
+  const hasMatch = effectivePermissions.some((pattern) =>
+    matchPermission(pattern, action),
+  );
+
+  if (!hasMatch) {
     return false;
   }
 
-  if (SUPER_ROLES.includes(user.role)) {
+  if (isTopLevelRole(user.role)) {
     return true;
   }
 

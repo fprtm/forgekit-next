@@ -1,34 +1,26 @@
-import { useForm, type Resolver } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { createUserSchema, updateUserSchema } from "../../../application/validations"
+import { z } from "zod"
+import { updateUserSchema } from "../../../application/validations"
 import { updateUser, createUserAction } from "../../http/actions/user.actions"
 import { UserEntity } from "../../../domain/entities/user.entity"
 import { UserRole } from "@/shared/config/roles"
+import { routes } from "@/shared/config/routes"
 
-export interface UserFormValues {
-  name: string
-  email?: string
-  role: UserRole
-  bio?: string
-  phoneNumber?: string
-  dateOfBirth?: string
-  gender?: string
-  preferredPronouns?: string
-  address?: string
-  city?: string
-  state?: string
-  country?: string
-  postalCode?: string
-}
+// updateUserSchema is a superset of createUserSchema's fields (name/role
+// required, everything else optional), so it doubles as the canonical shape
+// for this shared create+edit form. The stricter createUserSchema (email
+// required) is still enforced server-side in create-user.handler.ts.
+export type UserFormValues = z.infer<typeof updateUserSchema>
 
 export function useUserForm(initialData?: UserEntity) {
   const router = useRouter()
   const isEditing = !!initialData
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema) as unknown as Resolver<UserFormValues>,
+    resolver: zodResolver(updateUserSchema),
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",
@@ -68,9 +60,9 @@ export function useUserForm(initialData?: UserEntity) {
       toast.success(isEditing ? "User updated successfully!" : "User created successfully!")
 
       const redirectMap: Record<UserRole, string> = {
-        super_admin: "/d/users/admins",
-        admin: "/d/users/admins",
-        user: "/d/users/users",
+        super_admin: routes.dashboard.users.admins,
+        admin: routes.dashboard.users.admins,
+        user: routes.dashboard.users.users,
       }
 
       const redirectPath = redirectMap[data.role]

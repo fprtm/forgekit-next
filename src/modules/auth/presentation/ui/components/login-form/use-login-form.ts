@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { loginSchema, LoginInput } from "../../../../domain/validations";
+import { routes } from "@/shared/config/routes";
 
 export function useLoginForm() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export function useLoginForm() {
         toast.error("Invalid credentials, please try again.");
       } else {
         toast.success("Welcome back! Logging in...");
-        router.push("/d");
+        router.push(routes.dashboard.root);
         router.refresh();
       }
     } catch (error) {
@@ -46,7 +47,7 @@ export function useLoginForm() {
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/d" });
+      await signIn("google", { callbackUrl: routes.dashboard.root });
     } catch (error) {
       toast.error("Google sign in failed.");
       console.error(error);

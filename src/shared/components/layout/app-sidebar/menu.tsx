@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import { sidebarMenuItems } from "@/shared/config/menu";
 import { can } from "@/modules/auth/domain/policies";
 import { AuthUser } from "@/modules/auth/domain/types";
-import { UserRole } from "@/shared/constant/role";
+import { UserRole } from "@/shared/config/roles";
 
 import {
   DropdownMenu,
@@ -85,6 +85,15 @@ interface MenuWithChildrenProps {
 // ============================================================================
 
 /**
+ * Converts a menu label into a URL-safe, test-id-safe slug.
+ *
+ * @param label - The human readable menu label (e.g. "Dashboard").
+ * @returns A lowercase, hyphenated slug (e.g. "dashboard").
+ */
+const slugify = (label: string): string =>
+  label.toLowerCase().trim().replace(/\s+/g, "-");
+
+/**
  * Validates whether the current user has the required permission to view a specific menu item.
  *
  * @param item - The menu item or sub-item containing the optional requiredAction.
@@ -127,7 +136,10 @@ const StandardMenuItem = ({ item, isActive }: StandardMenuItemProps) => {
             : "text-zinc-600 hover:bg-zinc-200/50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-white",
         )}
       >
-        <Link href={item.href}>
+        <Link
+          href={item.href}
+          data-testid={`nav-${slugify(item.label)}-link`}
+        >
           <Icon
             className={cn(
               "h-4 w-4 shrink-0 transition-transform duration-200 group-hover/btn:scale-110",
@@ -165,6 +177,7 @@ const CollapsedDropdownMenu = ({
           <SidebarMenuButton
             isActive={isActive}
             tooltip={item.label}
+            data-testid={`nav-${slugify(item.label)}-link`}
             className={cn(
               "group/btn flex w-full items-center justify-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
               isActive
@@ -208,6 +221,7 @@ const CollapsedDropdownMenu = ({
               <DropdownMenuItem key={subItem.href} asChild>
                 <Link
                   href={subItem.href}
+                  data-testid={`nav-${slugify(item.label)}-${slugify(subItem.label)}-link`}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 cursor-pointer my-1",
                     isSubActive && "bg-zinc-100 dark:bg-zinc-800",
@@ -243,6 +257,7 @@ const ExpandedCollapsibleMenu = ({
           <SidebarMenuButton
             isActive={isActive}
             tooltip={item.label}
+            data-testid={`nav-${slugify(item.label)}-link`}
             className={cn(
               "group/btn flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
               isActive
@@ -280,7 +295,10 @@ const ExpandedCollapsibleMenu = ({
                         : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white",
                     )}
                   >
-                    <Link href={subItem.href}>
+                    <Link
+                      href={subItem.href}
+                      data-testid={`nav-${slugify(item.label)}-${slugify(subItem.label)}-link`}
+                    >
                       <span>{subItem.label}</span>
                     </Link>
                   </SidebarMenuSubButton>

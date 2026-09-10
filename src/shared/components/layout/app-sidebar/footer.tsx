@@ -24,6 +24,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/components/ui/avatar";
+import { routes } from "@/shared/config/routes";
 
 interface AppSidebarFooterProps {
   user?: {
@@ -52,6 +53,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
+                data-testid="user-menu-trigger"
                 className="w-full flex items-center justify-center rounded-xl p-2 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -85,7 +87,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
             >
               <DropdownMenuItem asChild>
                 <Link
-                  href="/d/profile"
+                  href={routes.dashboard.profile}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800/50 cursor-pointer"
                 >
                   <User className="h-4 w-4" />
@@ -94,7 +96,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href="/d/settings"
+                  href={routes.dashboard.settings.root}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800/50 cursor-pointer"
                 >
                   <Settings className="h-4 w-4" />
@@ -104,6 +106,7 @@ export function AppSidebarFooter({ user }: AppSidebarFooterProps) {
               <div className="my-1.5 h-px bg-zinc-200/50 dark:bg-zinc-800/50" />
               <DropdownMenuItem
                 onClick={() => signOut({ callbackUrl: "/login" })}
+                data-testid="logout-button"
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />

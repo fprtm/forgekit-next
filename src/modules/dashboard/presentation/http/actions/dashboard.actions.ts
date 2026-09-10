@@ -2,7 +2,8 @@
 
 import { auth } from "@/shared/lib/auth"
 import { DrizzleStatReader } from "../../../infrastructure/services/drizzle-stat-reader"
-import { GetDashboardStatsHandler, DashboardStats } from "../../../application/use-cases/get-dashboard-stats/get-dashboard-stats.handler"
+import { GetDashboardStatsHandler } from "../../../application/use-cases/get-dashboard-stats/get-dashboard-stats.handler"
+import { DashboardStats } from "../../../domain/entities/dashboard-stats"
 import { DomainException } from "@/shared/domain/exceptions/domain.exception"
 import { logger } from "@/shared/lib/logger"
 

@@ -1,15 +1,15 @@
 import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
 import { NotificationSentEvent } from "@/modules/notifications/domain/events/notification.events";
-import { DrizzleSettingRepository } from "@/modules/setting/infrastructure/database/repositories/drizzle-setting.repository";
-
-const settingRepo = new DrizzleSettingRepository();
+import { ISettingRepository } from "@/modules/setting/domain/repositories/setting-repository.interface";
 
 export class NotificationWhatsAppListener {
+  constructor(private readonly settingRepo: ISettingRepository) {}
+
   public registerListeners(): void {
     eventDispatcher.register<NotificationSentEvent>("NotificationSentEvent", async (event) => {
       if (!event.channelsUsed.includes("whatsapp")) return;
 
-      const fonnteCreds = await settingRepo.findByKey("fonnte_credentials");
+      const fonnteCreds = await this.settingRepo.findByKey("fonnte_credentials");
 
       if (!fonnteCreds?.value?.apiToken) {
         console.log(`[WhatsAppListener] Fonnte credentials not configured. Skipping WhatsApp for notification ${event.notificationId}`);
@@ -41,6 +41,3 @@ export class NotificationWhatsAppListener {
     });
   }
 }
-
-export const notificationWhatsAppListener = new NotificationWhatsAppListener();
-notificationWhatsAppListener.registerListeners();

@@ -12,4 +12,15 @@ export class InvalidRoleException extends DomainException {
   }
 }
 
+export class InvalidCurrentPasswordException extends DomainException {
+  constructor() {
+    super("The current password you entered is incorrect.", "INVALID_CURRENT_PASSWORD", 400);
+  }
+}
+
+export class InvalidOrExpiredResetTokenException extends DomainException {
+  constructor() {
+    super("This password reset link is invalid or has expired.", "INVALID_RESET_TOKEN", 400);
+  }
+}
 

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { createUserFixture } from './user.factory';
 import { loginAsSuperAdmin, loginAsUser } from '@/shared/tests/e2e-helpers';
+import { routes } from '@/shared/config/routes';
 
 test.describe.serial('Users Module E2E - Positive Path', () => {
   test.setTimeout(60000);
@@ -13,20 +14,20 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should navigate to accounts page and display the list', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible();
     await expect(page.locator('table')).toBeVisible();
   });
 
   test('should display correct table headers', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
 
     await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Role' })).toBeVisible();
   });
 
   test('should navigate to create user page', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await page.getByRole('main').getByRole('link', { name: 'Create User' }).click();
 
     await expect(page).toHaveURL(/.*\/d\/users\/create/, { timeout: 15000 });
@@ -42,7 +43,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
     uniqueUserName = userData.name;
     uniqueUserEmail = userData.email;
 
-    await page.goto('/d/users/create');
+    await page.goto(routes.dashboard.users.create);
     await page.getByLabel('Full Name').fill(uniqueUserName);
     await page.getByLabel('Email Address').fill(uniqueUserEmail);
 
@@ -60,7 +61,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully edit a user account', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await page.waitForTimeout(1000);
 
     await page.getByPlaceholder('Search...').fill(uniqueUserEmail);
@@ -95,7 +96,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully edit a user profile', async ({ page }) => {
-    await page.goto('/d/users/users');
+    await page.goto(routes.dashboard.users.users);
     await page.waitForTimeout(1000);
 
     await page.getByPlaceholder('Search...').fill(uniqueUserEmail);
@@ -134,7 +135,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully reset a user password', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await page.waitForTimeout(1000);
 
     await page.getByPlaceholder('Search...').fill(uniqueUserEmail);
@@ -150,7 +151,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully delete a user', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await page.waitForTimeout(1000);
 
     await page.getByPlaceholder('Search...').fill(uniqueUserEmail);
@@ -169,7 +170,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully view isolated admin-only account list', async ({ page }) => {
-    await page.goto('/d/users/admins');
+    await page.goto(routes.dashboard.users.admins);
     await expect(page.getByRole('heading', { name: 'Admins' })).toBeVisible();
     await expect(page.locator('table')).toBeVisible();
 
@@ -177,7 +178,7 @@ test.describe.serial('Users Module E2E - Positive Path', () => {
   });
 
   test('should successfully view isolated user-only account list', async ({ page }) => {
-    await page.goto('/d/users/users');
+    await page.goto(routes.dashboard.users.users);
     await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible({ timeout: 15000 });
     await page.waitForTimeout(1000);
     await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
@@ -190,13 +191,13 @@ test.describe('Users Module E2E - Negative / RBAC Path', () => {
   });
 
   test('should deny access to accounts and admins pages for regular user', async ({ page }) => {
-    await page.goto('/d/users/accounts');
+    await page.goto(routes.dashboard.users.accounts);
     await expect(page).toHaveURL(/.*\/d$/, { timeout: 10000 });
 
-    await page.goto('/d/users/admins');
+    await page.goto(routes.dashboard.users.admins);
     await expect(page).toHaveURL(/.*\/d$/, { timeout: 10000 });
 
-    await page.goto('/d/users/users');
+    await page.goto(routes.dashboard.users.users);
     await expect(page).toHaveURL(/.*\/d$/, { timeout: 10000 });
   });
 });

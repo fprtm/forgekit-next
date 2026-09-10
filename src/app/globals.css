@@ -135,3 +135,74 @@
     @apply font-sans;
   }
 }
+
+/**
+ * Layout & spacing primitives — single source of truth for structural spacing.
+ *
+ * Why this exists: every module (products, users, setting, notifications, dashboard)
+ * previously hardcoded its own page padding, card wrapper, header size, and gap
+ * values independently — the same visual role ("page title", "content card",
+ * "form field spacing") was implemented 3-4 different ways across the app.
+ *
+ * The fix: name the ROLE, not the value. A page/component reaches for
+ * `.page-title` or `.content-stack`, never `text-3xl font-extrabold` or
+ * `space-y-8` directly. Changing the visual scale for the whole app — e.g.
+ * tightening all card padding, or bumping the base spacing unit — becomes a
+ * one-line edit here instead of a grep-and-replace across every module.
+ *
+ * Tailwind v4's `--spacing` custom property is the base multiplier every
+ * spacing utility (`p-4`, `gap-6`, etc.) derives from — override it once here
+ * to rescale the ENTIRE app's spacing system without touching component code.
+ */
+@theme {
+  --spacing: 0.25rem; /* default Tailwind base unit — change this to rescale every padding, margin, and gap utility app-wide */
+}
+
+@layer components {
+  /* Page shell: the outermost wrapper every dashboard page renders inside. */
+  .page-shell {
+    @apply flex w-full flex-col gap-6;
+  }
+
+  /* Page header: title + optional description + optional action button row. */
+  .page-header {
+    @apply flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+  }
+  .page-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Content card: the standard "boxed section" every module uses for its main content.
+     Always pair with shadcn's <Card>/<CardContent> — this class only controls
+     the INTERNAL padding/spacing rhythm, not the border/background/radius
+     (those stay owned by the Card primitive so theming stays centralized there too). */
+  .content-stack {
+    @apply flex flex-col gap-6;
+  }
+
+  /* Form field spacing: vertical gap between stacked form fields (labels+inputs). */
+  .form-stack {
+    @apply flex flex-col gap-6;
+  }
+  .form-field {
+    @apply flex flex-col gap-2;
+  }
+
+  /* Section spacing: gap between major sections within a page (e.g. stat cards, then activity feed). */
+  .section-stack {
+    @apply flex flex-col gap-6;
+  }
+
+  /* Icon scale: use these instead of ad-hoc h-4/h-5/size-4 mixes.
+     `icon-sm` = inline icons (buttons, form fields, nav items).
+     `icon-md` = section/card header icons. */
+  .icon-sm {
+    @apply size-4 shrink-0;
+  }
+  .icon-md {
+    @apply size-5 shrink-0;
+  }
+}

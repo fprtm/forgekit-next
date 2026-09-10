@@ -17,12 +17,10 @@ export class ResetPasswordHandler {
   ) {}
 
   async execute(command: ResetPasswordCommand): Promise<ResetPasswordDTO> {
-    const { userId, currentUser } = command
+    const { userId, user: currentUser } = command
 
-    if (currentUser) {
-      if (!can(currentUser, "users:update", { ownerId: userId })) {
-        throw new UnauthorizedException()
-      }
+    if (!can(currentUser, "users:update", { ownerId: userId })) {
+      throw new UnauthorizedException()
     }
 
     const user = await this.userRepository.findById(userId)
@@ -34,7 +32,7 @@ export class ResetPasswordHandler {
     await this.userRepository.updatePassword(userId, hashedPassword)
 
     await eventDispatcher.dispatch(
-      new UserPasswordResetEvent(user as UserEntity, currentUser?.id || null)
+      new UserPasswordResetEvent(user as UserEntity, currentUser.id)
     )
 
     return {

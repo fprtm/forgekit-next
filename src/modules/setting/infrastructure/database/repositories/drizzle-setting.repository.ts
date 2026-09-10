@@ -35,14 +35,14 @@ function mapToDomain<K extends SettingKey>(
 ): Setting<K> {
   const key = row.key as K;
   const category = KEY_TO_CATEGORY[key] || "general";
-  return {
+  return Setting.reconstruct<K>({
     id: row.id,
     key,
     category,
     value: row.value as SettingsValueMap[K],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-  };
+  });
 }
 
 export class DrizzleSettingRepository implements ISettingRepository {
@@ -56,7 +56,7 @@ export class DrizzleSettingRepository implements ISettingRepository {
     return mapToDomain<K>(row);
   }
 
-  async findAll(): Promise<Setting[]> {
+  async findMany(): Promise<Setting[]> {
     const rows = await db.select().from(settings);
     return rows.map((row) => mapToDomain<SettingKey>(row));
   }

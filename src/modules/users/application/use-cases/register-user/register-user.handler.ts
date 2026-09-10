@@ -31,8 +31,8 @@ export class RegisterUserHandler {
     // Hash password securely using the abstraction Port (IPasswordHasher)
     const hashedPassword = await this.passwordHasher.hash(parsed.password)
 
-    // DevSecOps Security: Hardcode role to 'patient' for public registration path.
-    // Avoids privilege escalation completely.
+    // Security: hardcode role to "user" for the public registration path —
+    // self-registration must never be able to grant admin/super_admin privileges.
     const created = await this.userRepository.create({
       name: parsed.name,
       email: parsed.email,

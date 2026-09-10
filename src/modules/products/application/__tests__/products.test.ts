@@ -6,20 +6,22 @@ import { UpdateProductHandler } from "../use-cases/update-product/update-product
 import { DeleteProductHandler } from "../use-cases/delete-product/delete-product.handler";
 import { IProductRepository } from "../../domain/repositories/product-repository.interface";
 import { ProductEntity } from "../../domain/entities/product.entity";
+import { AuthUser } from "@/modules/auth/domain/types";
 
 // Mock server-only to prevent client component errors in tests
 mock.module("server-only", () => { return {} });
 
 describe("Products Bounded Context - Unit & Validation Tests", () => {
   let mockProductRepository: IProductRepository;
-  const dummyProduct: ProductEntity = {
+  const testUser: AuthUser = { id: "user-1", role: "super_admin" };
+  const dummyProduct: ProductEntity = ProductEntity.reconstruct({
     id: "prod-1",
     name: "Test Laptop",
     description: "High-end developer computer",
     price: 1500,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  });
 
   beforeEach(() => {
     mockProductRepository = {
@@ -63,7 +65,7 @@ describe("Products Bounded Context - Unit & Validation Tests", () => {
 
     it("should create a product via CreateProductHandler", async () => {
       const handler = new CreateProductHandler(mockProductRepository);
-      const input = { name: "New Keyboard", price: 120 };
+      const input = { name: "New Keyboard", price: 120, user: testUser };
       const result = await handler.execute(input);
 
       expect(result.name).toBe("New Keyboard");
@@ -73,7 +75,7 @@ describe("Products Bounded Context - Unit & Validation Tests", () => {
 
     it("should update a product via UpdateProductHandler", async () => {
       const handler = new UpdateProductHandler(mockProductRepository);
-      const input = { id: "prod-1", price: 1350 };
+      const input = { id: "prod-1", price: 1350, user: testUser };
       const result = await handler.execute(input);
 
       expect(result.price).toBe(1350);
@@ -82,7 +84,7 @@ describe("Products Bounded Context - Unit & Validation Tests", () => {
 
     it("should delete a product via DeleteProductHandler", async () => {
       const handler = new DeleteProductHandler(mockProductRepository);
-      const result = await handler.execute({ id: "prod-1" });
+      const result = await handler.execute({ id: "prod-1", user: testUser });
 
       expect(result.id).toBe("prod-1");
       expect(mockProductRepository.delete).toHaveBeenCalled();

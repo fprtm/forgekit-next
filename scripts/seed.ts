@@ -35,6 +35,14 @@ for (let i = 0; i < args.length; i++) {
 }
 
 async function runSeeders() {
+  // Guard: never allow seeding (including plaintext test-credential logging
+  // in module seeders such as src/modules/users/infrastructure/seeder.ts)
+  // to run against a production environment.
+  if (process.env.NODE_ENV === "production") {
+    console.error("❌ Refusing to seed: NODE_ENV=production");
+    process.exit(1);
+  }
+
   console.log("🌱 ForgeKit Centralized Dynamic Seed Runner 🌱");
   console.log("-------------------------------------------------");
 

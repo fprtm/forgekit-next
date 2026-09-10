@@ -6,6 +6,8 @@ import Link from "next/link"
 import { AuthUser } from "@/modules/auth/domain/types"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
 import Wrapper from "@/shared/components/layout/wrapper"
+import { routes } from "@/shared/config/routes"
+import { Card, CardContent } from "@/shared/components/ui/card"
 
 export function UserListPage({
   users,
@@ -16,17 +18,21 @@ export function UserListPage({
 }) {
   return (
     <Wrapper>
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <PermissionGate action="users:create" user={currentUser}>
-          <Button asChild>
-            <Link href="/d/users/create">Create User</Link>
-          </Button>
-        </PermissionGate>
-      </div>
+      <div className="page-shell">
+        <div className="page-header">
+          <h1 className="page-title">Users</h1>
+          <PermissionGate action="users:create" user={currentUser}>
+            <Button asChild>
+              <Link href={routes.dashboard.users.create} data-testid="create-user-button">Create User</Link>
+            </Button>
+          </PermissionGate>
+        </div>
 
-      <div className="bg-white p-6 border rounded-lg shadow-sm">
-        <UserTable data={users} currentUser={currentUser} />
+        <Card>
+          <CardContent>
+            <UserTable data={users} currentUser={currentUser} />
+          </CardContent>
+        </Card>
       </div>
     </Wrapper>
   )

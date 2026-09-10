@@ -12,10 +12,11 @@ export class SettingKeyValueObject {
       throw new DomainException("Setting key cannot be empty", "INVALID_SETTING_KEY", 400);
     }
 
-    // Enforce UPPERCASE_SNAKE_CASE format
-    const snakeCaseRegex = /^[A-Z0-9_]+$/;
+    // Enforce lowercase_snake_case format (matches actual setting keys, e.g.
+    // "business_name", "payment_method", "midtrans_credentials")
+    const snakeCaseRegex = /^[a-z][a-z0-9_]*$/;
     if (!snakeCaseRegex.test(key)) {
-      throw new DomainException(`Setting key must be UPPERCASE_SNAKE_CASE. Got: ${key}`, "INVALID_SETTING_KEY", 400);
+      throw new DomainException(`Setting key must be lowercase_snake_case. Got: ${key}`, "INVALID_SETTING_KEY", 400);
     }
 
     return new SettingKeyValueObject(key);

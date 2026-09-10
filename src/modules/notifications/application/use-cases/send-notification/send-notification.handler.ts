@@ -1,5 +1,5 @@
 import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
-import { NotificationRepository } from "@/modules/notifications/domain/repositories/notification.repository";
+import { INotificationRepository } from "@/modules/notifications/domain/repositories/notification-repository.interface";
 import { ISettingRepository } from "@/modules/setting/domain/repositories/setting-repository.interface";
 import { SendNotificationCommand } from "@/modules/notifications/application/use-cases/send-notification/send-notification.command";
 import { NotificationEntity, NotificationType } from "@/modules/notifications/domain/entities/notification.entity";
@@ -9,7 +9,7 @@ const MANDATORY_TYPES: NotificationType[] = ["system", "security"];
 
 export class SendNotificationHandler {
   constructor(
-    private readonly notificationRepo: NotificationRepository,
+    private readonly notificationRepo: INotificationRepository,
     private readonly settingRepo: ISettingRepository
   ) {}
 
@@ -51,7 +51,7 @@ export class SendNotificationHandler {
     }
 
     // 5. Save to Database
-    const notification = await this.notificationRepo.save({
+    const notification = await this.notificationRepo.create({
       userId: command.userId,
       title: command.title,
       message: command.message,

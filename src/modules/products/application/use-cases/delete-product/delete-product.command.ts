@@ -1,6 +1,5 @@
-import { AuthUser } from "@/modules/auth/domain/types"
+import { AuthenticatedCommand } from "@/shared/domain/types/authenticated-command"
 
-export interface DeleteProductCommand {
+export interface DeleteProductCommand extends AuthenticatedCommand {
   id: string
-  user?: AuthUser
 }

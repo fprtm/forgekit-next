@@ -1,15 +1,15 @@
 import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
 import { NotificationSentEvent } from "@/modules/notifications/domain/events/notification.events";
-import { DrizzleSettingRepository } from "@/modules/setting/infrastructure/database/repositories/drizzle-setting.repository";
-
-const settingRepo = new DrizzleSettingRepository();
+import { ISettingRepository } from "@/modules/setting/domain/repositories/setting-repository.interface";
 
 export class NotificationEmailListener {
+  constructor(private readonly settingRepo: ISettingRepository) {}
+
   public registerListeners(): void {
     eventDispatcher.register<NotificationSentEvent>("NotificationSentEvent", async (event) => {
       if (!event.channelsUsed.includes("email")) return;
 
-      const emailGateway = await settingRepo.findByKey("email_gateway");
+      const emailGateway = await this.settingRepo.findByKey("email_gateway");
 
       if (!emailGateway?.value?.host) {
         console.log(`[EmailListener] Email gateway not configured. Skipping email for notification ${event.notificationId}`);
@@ -38,6 +38,3 @@ export class NotificationEmailListener {
     });
   }
 }
-
-export const notificationEmailListener = new NotificationEmailListener();
-notificationEmailListener.registerListeners();

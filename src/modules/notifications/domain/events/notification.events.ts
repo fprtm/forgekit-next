@@ -17,3 +17,21 @@ export class NotificationSentEvent implements DomainEvent {
     this.occurredOn = new Date();
   }
 }
+
+export class AllNotificationsReadEvent implements DomainEvent {
+  public readonly occurredOn: Date;
+  public readonly eventName = "AllNotificationsReadEvent";
+
+  constructor(public readonly userId: string) {
+    this.occurredOn = new Date();
+  }
+}
+
+export class NotificationSettingUpdatedEvent implements DomainEvent {
+  public readonly occurredOn: Date;
+  public readonly eventName = "NotificationSettingUpdatedEvent";
+
+  constructor(public readonly userId: string) {
+    this.occurredOn = new Date();
+  }
+}

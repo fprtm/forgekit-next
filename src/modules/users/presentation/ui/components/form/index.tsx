@@ -28,8 +28,8 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
   const { form, onSubmit, isEditing } = useUserForm(initialData)
 
   return (
-    <Form {...form as any}>
-      <form onSubmit={form.handleSubmit(onSubmit) as any} className="space-y-6">
+    <Form {...form}>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid={isEditing ? "update-user-form" : "create-user-form"}>
         <div className="flex gap-4">
           <FormField
             control={form.control}
@@ -38,7 +38,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
               <FormItem className="w-full">
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter user's name" {...field} />
+                  <Input placeholder="Enter user's name" {...field} data-testid="user-name-input" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -57,6 +57,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                     placeholder="name@example.com"
                     {...field}
                     disabled={isEditing}
+                    data-testid="user-email-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -74,7 +75,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                 <FormLabel>Role</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger data-testid="user-role-select">
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                   </FormControl>
@@ -110,7 +111,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. +62 812-3456-789" {...field} />
+                      <Input placeholder="e.g. +62 812-3456-789" {...field} value={field.value || ""} data-testid="phone-number-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -124,7 +125,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                     <FormLabel>Gender</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="gender-select">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                       </FormControl>
@@ -147,7 +148,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>Date of Birth</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} value={field.value || ""} />
+                      <Input type="date" {...field} value={field.value || ""} data-testid="date-of-birth-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,7 +161,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>Preferred Pronouns</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. he/him, she/her" {...field} />
+                      <Input placeholder="e.g. he/him, she/her" {...field} value={field.value || ""} data-testid="preferred-pronouns-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -173,7 +174,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem className="col-span-2">
                     <FormLabel>Biography</FormLabel>
                     <FormControl>
-                      <Input placeholder="Brief bio or role description..." {...field} />
+                      <Input placeholder="Brief bio or role description..." {...field} value={field.value || ""} data-testid="bio-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +187,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem className="col-span-2">
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Street Address" {...field} />
+                      <Input placeholder="Street Address" {...field} value={field.value || ""} data-testid="address-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -199,7 +200,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input placeholder="City" {...field} />
+                      <Input placeholder="City" {...field} value={field.value || ""} data-testid="city-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -212,7 +213,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>State / Province</FormLabel>
                     <FormControl>
-                      <Input placeholder="State" {...field} />
+                      <Input placeholder="State" {...field} value={field.value || ""} data-testid="state-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -225,7 +226,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="Country" {...field} />
+                      <Input placeholder="Country" {...field} value={field.value || ""} data-testid="country-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -238,7 +239,7 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
                   <FormItem>
                     <FormLabel>Postal Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="Postal Code" {...field} />
+                      <Input placeholder="Postal Code" {...field} value={field.value || ""} data-testid="postal-code-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,7 +249,11 @@ export function UserProfileForm({ initialData, isProfile = false }: { initialDat
           </div>
         )}
 
-        <Button type="submit" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          data-testid={isEditing ? "update-user-submit-button" : "create-user-submit-button"}
+        >
           {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update User" : "Create User"}
         </Button>
       </form>

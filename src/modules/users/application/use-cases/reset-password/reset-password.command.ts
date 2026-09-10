@@ -1,6 +1,5 @@
-import { AuthUser } from "@/modules/auth/domain/types"
+import { AuthenticatedCommand } from "@/shared/domain/types/authenticated-command"
 
-export interface ResetPasswordCommand {
+export interface ResetPasswordCommand extends AuthenticatedCommand {
   userId: string
-  currentUser?: AuthUser
 }

@@ -1,4 +1,4 @@
-import { IStatReader } from "../../application/use-cases/get-dashboard-stats/get-dashboard-stats.handler";
+import { IStatReader } from "../../domain/repositories/stat-reader.interface";
 import { db } from "@/db";
 import { users } from "../../../users/infrastructure/database/drizzle/schema";
 import { products } from "../../../products/infrastructure/database/drizzle/schema";

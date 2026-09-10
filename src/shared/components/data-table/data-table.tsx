@@ -157,7 +157,7 @@ export function DataTable<TData, TValue>({
         filterColumns={filterColumns}
       />
       <div className="rounded-md border">
-        <Table>
+        <Table data-testid="data-table">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

@@ -1,51 +1,66 @@
 import { describe, expect, it, mock, beforeEach } from "bun:test";
 import { ImpersonateUserHandler } from "../use-cases/impersonate-user/impersonate-user.handler";
 import { IUserRepository } from "@/modules/users/domain/repositories/user-repository.interface";
-import { UserEntity } from "@/modules/users/domain/entities/user.entity";
+import { UserEntity, UserProfile } from "@/modules/users/domain/entities/user.entity";
+import { ISessionStore } from "@/modules/auth/domain/services/session-store.interface";
 import { UnauthorizedException } from "@/shared/domain/exceptions/unauthorized.exception";
 import { DomainException } from "@/shared/domain/exceptions/domain.exception";
 
 // Mock server-only
 mock.module("server-only", () => { return {} });
 
-// Mock next/headers cookies
-mock.module("next/headers", () => {
-  const cookieStore = {
-    set: mock(() => {}),
-    delete: mock(() => {}),
-    get: mock(() => ({ value: "target-user-id" })),
-  };
-  return {
-    cookies: mock(() => Promise.resolve(cookieStore)),
-  };
-});
-
 describe("Auth Impersonate - Unit Tests", () => {
-  const dummySuperAdmin: UserEntity = {
+  const dummySuperAdmin: UserEntity = UserEntity.reconstruct({
     id: "superadmin-1",
     name: "Super Admin",
     email: "superadmin@example.com",
     emailVerified: new Date(),
     image: null,
     role: "super_admin",
+    isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  });
 
-  const dummyUser: UserEntity = {
+  const dummyUser: UserEntity = UserEntity.reconstruct({
     id: "user-1",
     name: "Normal User",
     email: "user@example.com",
     emailVerified: new Date(),
     image: null,
     role: "user",
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  const dummyProfile: UserProfile = {
+    id: "profile-1",
+    userId: "user-1",
+    bio: null,
+    phoneNumber: null,
+    dateOfBirth: null,
+    gender: null,
+    preferredPronouns: null,
+    address: null,
+    city: null,
+    state: null,
+    country: null,
+    postalCode: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
   let mockUserRepository: IUserRepository;
+  let mockSessionStore: ISessionStore;
 
   beforeEach(() => {
+    mockSessionStore = {
+      setCookie: mock(() => Promise.resolve()),
+      getCookie: mock(() => Promise.resolve("target-user-id")),
+      deleteCookie: mock(() => Promise.resolve()),
+    };
+
     mockUserRepository = {
       findMany: mock(() => Promise.resolve([])),
       findById: mock((id) => {
@@ -58,11 +73,14 @@ describe("Auth Impersonate - Unit Tests", () => {
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
       updatePassword: mock(() => Promise.resolve(dummyUser)),
+      findProfileByUserId: mock(() => Promise.resolve(null)),
+      upsertProfile: mock(() => Promise.resolve(dummyProfile)),
+      updateWithProfile: mock(() => Promise.resolve({ user: dummyUser, profile: dummyProfile })),
     };
   });
 
   it("should permit super_admin to impersonate another user", async () => {
-    const handler = new ImpersonateUserHandler(mockUserRepository);
+    const handler = new ImpersonateUserHandler(mockUserRepository, mockSessionStore);
     const command = {
       superAdminId: "superadmin-1",
       targetUserId: "user-1",
@@ -74,7 +92,7 @@ describe("Auth Impersonate - Unit Tests", () => {
   });
 
   it("should fail when target user does not exist", async () => {
-    const handler = new ImpersonateUserHandler(mockUserRepository);
+    const handler = new ImpersonateUserHandler(mockUserRepository, mockSessionStore);
     const command = {
       superAdminId: "superadmin-1",
       targetUserId: "non-existent-user",
@@ -84,7 +102,7 @@ describe("Auth Impersonate - Unit Tests", () => {
   });
 
   it("should fail when non-superadmin tries to impersonate", async () => {
-    const handler = new ImpersonateUserHandler(mockUserRepository);
+    const handler = new ImpersonateUserHandler(mockUserRepository, mockSessionStore);
     // user-1 is not a superadmin
     mockUserRepository.findById = mock((id) => {
       if (id === "user-1") return Promise.resolve(dummyUser);
@@ -100,7 +118,7 @@ describe("Auth Impersonate - Unit Tests", () => {
   });
 
   it("should stop impersonation when targetUserId is null", async () => {
-    const handler = new ImpersonateUserHandler(mockUserRepository);
+    const handler = new ImpersonateUserHandler(mockUserRepository, mockSessionStore);
     const command = {
       superAdminId: "superadmin-1",
       targetUserId: null,

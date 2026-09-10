@@ -1,12 +1,10 @@
-import { db } from "@/db"
-import { eq } from "drizzle-orm"
 import { IUserRepository } from "../../../domain/repositories/user-repository.interface"
 import { GetUserProfileCommand } from "./get-user-profile.command"
 import { GetUserProfileDTO } from "./get-user-profile.dto"
 import { can } from "@/modules/auth/domain/policies"
-import { userProfiles } from "../../../infrastructure/database/drizzle/schema"
 import { UnauthorizedException } from "@/shared/domain/exceptions/unauthorized.exception"
 import { UserNotFoundException } from "../../../domain/exceptions/user.exceptions"
+import { UserEntity } from "../../../domain/entities/user.entity"
 
 export class GetUserProfileHandler {
   constructor(private userRepository: IUserRepository) {}
@@ -21,16 +19,12 @@ export class GetUserProfileHandler {
     const user = await this.userRepository.findById(command.id)
     if (!user) throw new UserNotFoundException(command.id)
 
-    const profileData = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, user.id))
-      .limit(1)
+    const profile = await this.userRepository.findProfileByUserId(user.id)
 
-    return {
+    return UserEntity.reconstruct({
       ...user,
       emailVerified: null,
-      profile: profileData[0] || null,
-    } as GetUserProfileDTO
+      profile: profile || null,
+    })
   }
 }

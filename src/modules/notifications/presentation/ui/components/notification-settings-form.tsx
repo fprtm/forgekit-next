@@ -19,11 +19,11 @@ interface SubscriptionsState {
 }
 
 const SUBSCRIPTION_ITEMS: { key: NotificationType; label: string; description: string; icon: React.ReactNode; mandatory: boolean }[] = [
-  { key: "system", label: "System Notifications", description: "Platform updates and system announcements", icon: <Layers className="h-4 w-4 text-amber-600 dark:text-amber-400" />, mandatory: true },
-  { key: "security", label: "Security Notifications", description: "Login alerts and security warnings", icon: <Lock className="h-4 w-4 text-red-600 dark:text-red-400" />, mandatory: true },
-  { key: "marketing", label: "Marketing Notifications", description: "Promotions and offers", icon: <Tag className="h-4 w-4 text-pink-600 dark:text-pink-400" />, mandatory: false },
-  { key: "product", label: "Product Notifications", description: "Product updates and inventory alerts", icon: <ShieldCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />, mandatory: false },
-  { key: "general", label: "General Notifications", description: "Other miscellaneous notifications", icon: <Bell className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />, mandatory: false },
+  { key: "system", label: "System Notifications", description: "Platform updates and system announcements", icon: <Layers className="icon-sm text-amber-600 dark:text-amber-400" />, mandatory: true },
+  { key: "security", label: "Security Notifications", description: "Login alerts and security warnings", icon: <Lock className="icon-sm text-red-600 dark:text-red-400" />, mandatory: true },
+  { key: "marketing", label: "Marketing Notifications", description: "Promotions and offers", icon: <Tag className="icon-sm text-pink-600 dark:text-pink-400" />, mandatory: false },
+  { key: "product", label: "Product Notifications", description: "Product updates and inventory alerts", icon: <ShieldCheck className="icon-sm text-indigo-600 dark:text-indigo-400" />, mandatory: false },
+  { key: "general", label: "General Notifications", description: "Other miscellaneous notifications", icon: <Bell className="icon-sm text-zinc-600 dark:text-zinc-400" />, mandatory: false },
 ]
 
 export function NotificationSettingsForm() {
@@ -112,11 +112,11 @@ export function NotificationSettingsForm() {
   }
 
   return (
-    <form onSubmit={handleSave}>
+    <form method="post" onSubmit={handleSave}>
       <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-md mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <Mail className="h-5 w-5 text-blue-500" />
+            <Mail className="icon-md text-blue-500" />
             Delivery Channels
           </CardTitle>
           <CardDescription>
@@ -127,7 +127,7 @@ export function NotificationSettingsForm() {
           <div className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30">
-                <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <Mail className="icon-sm text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-sm font-semibold">Email Notifications</p>
@@ -141,13 +141,14 @@ export function NotificationSettingsForm() {
               checked={email}
               onCheckedChange={setEmail}
               disabled={isSaving}
+              data-testid="email-notification-toggle"
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/30">
-                <BadgeCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <BadgeCheck className="icon-sm text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <p className="text-sm font-semibold">Push Notifications</p>
@@ -161,13 +162,14 @@ export function NotificationSettingsForm() {
               checked={push}
               onCheckedChange={setPush}
               disabled={isSaving}
+              data-testid="push-notification-toggle"
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30">
-                <Smartphone className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <Smartphone className="icon-sm text-purple-600 dark:text-purple-400" />
               </div>
               <div>
                 <p className="text-sm font-semibold">WhatsApp Notifications</p>
@@ -181,6 +183,7 @@ export function NotificationSettingsForm() {
               checked={whatsapp}
               onCheckedChange={setWhatsapp}
               disabled={isSaving}
+              data-testid="whatsapp-notification-toggle"
             />
           </div>
         </CardContent>
@@ -189,7 +192,7 @@ export function NotificationSettingsForm() {
       <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-md mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <Layers className="h-5 w-5 text-zinc-500" />
+            <Layers className="icon-md text-zinc-500" />
             Module Subscriptions
           </CardTitle>
           <CardDescription>
@@ -219,6 +222,7 @@ export function NotificationSettingsForm() {
                 checked={subscriptions[item.key]}
                 onCheckedChange={() => toggleSubscription(item.key)}
                 disabled={isSaving || item.mandatory}
+                data-testid={`${item.key}-notification-toggle`}
               />
             </div>
           ))}
@@ -227,13 +231,14 @@ export function NotificationSettingsForm() {
           <Button
             type="submit"
             id="notif-settings-save-btn"
+            data-testid="save-notification-settings-button"
             disabled={isSaving}
             className="rounded-xl px-5 h-10 gap-2 cursor-pointer transition-all active:scale-[0.98] ml-auto"
           >
             {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="icon-sm animate-spin" />
             ) : (
-              <Bell className="h-4 w-4" />
+              <Bell className="icon-sm" />
             )}
             <span>Save preferences</span>
           </Button>

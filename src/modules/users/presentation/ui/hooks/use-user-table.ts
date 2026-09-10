@@ -8,19 +8,29 @@ export function useUserTable() {
   const [isDeleting, setIsDeleting] = React.useState(false)
   const [isResetting, setIsResetting] = React.useState(false)
   const [resetResult, setResetResult] = React.useState<{ email: string; newPassword: string } | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null)
 
-  async function handleDelete(id: string) {
-    if (confirm("Are you sure you want to delete this user?")) {
-      setIsDeleting(true)
-      const res = await deleteUserAction(id)
-      if (res.success) {
-        toast.success("User deleted successfully")
-        router.refresh()
-      } else {
-        toast.error(res.error)
-      }
-      setIsDeleting(false)
+  function openConfirm(id: string) {
+    setPendingDeleteId(id)
+  }
+
+  function cancelDelete() {
+    setPendingDeleteId(null)
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return
+    const id = pendingDeleteId
+    setPendingDeleteId(null)
+    setIsDeleting(true)
+    const res = await deleteUserAction(id)
+    if (res.success) {
+      toast.success("User deleted successfully")
+      router.refresh()
+    } else {
+      toast.error(res.error)
     }
+    setIsDeleting(false)
   }
 
   async function handleResetPassword(userId: string) {
@@ -41,7 +51,10 @@ export function useUserTable() {
 
   return {
     isDeleting,
-    handleDelete,
+    pendingDeleteId,
+    openConfirm,
+    cancelDelete,
+    confirmDelete,
     isResetting,
     resetResult,
     handleResetPassword,

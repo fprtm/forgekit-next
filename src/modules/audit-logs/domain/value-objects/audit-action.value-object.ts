@@ -1,29 +1,27 @@
 import { DomainException } from "@/shared/domain/exceptions/domain.exception";
+import type { AuditLogAction } from "../entities/audit-log.entity";
 
 export const VALID_AUDIT_ACTIONS = [
-  "user:create", "user:update", "user:delete", "user:register",
-  "product:create", "product:update", "product:delete",
-  "setting:update", "auth:login", "auth:logout"
-] as const;
-
-export type AuditActionType = typeof VALID_AUDIT_ACTIONS[number];
+  "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "REGISTER",
+  "SYSTEM", "SEND", "READ", "IMPERSONATE", "ACCESS", "PURGE",
+] as const satisfies readonly AuditLogAction[];
 
 export class AuditActionValueObject {
-  private readonly action: string;
+  private readonly action: AuditLogAction;
 
-  private constructor(action: string) {
+  private constructor(action: AuditLogAction) {
     this.action = action;
   }
 
   public static create(action: string): AuditActionValueObject {
-    if (!VALID_AUDIT_ACTIONS.includes(action as AuditActionType)) {
+    if (!VALID_AUDIT_ACTIONS.includes(action as AuditLogAction)) {
       throw new DomainException(`Invalid audit action: ${action}`, "INVALID_AUDIT_ACTION", 400);
     }
 
-    return new AuditActionValueObject(action);
+    return new AuditActionValueObject(action as AuditLogAction);
   }
 
-  public getValue(): string {
+  public getValue(): AuditLogAction {
     return this.action;
   }
 }

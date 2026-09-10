@@ -8,6 +8,8 @@ import { MarkAllNotificationsReadHandler } from "../../../application/use-cases/
 import { UpdateUserSettingHandler } from "../../../application/use-cases/update-user-setting/update-user-setting.handler"
 import { NotificationEntity, UserNotificationSettingsEntity, NotificationType } from "../../../domain/entities/notification.entity"
 import { DomainException } from "@/shared/domain/exceptions/domain.exception"
+import { NotificationNotFoundException } from "../../../domain/exceptions/notification.exceptions"
+import { toPlain } from "@/shared/domain/serialize"
 
 type ActionResult<T> =
   | { success: true; data: T; error: null }
@@ -25,7 +27,7 @@ export async function getNotificationsAction(limit = 20, offset = 0): Promise<Ac
 
   try {
     const data = await getNotificationsUC.execute({ userId: session.user.id, limit: limit + 1, offset })
-    return { success: true, data, error: null }
+    return { success: true, data: toPlain(data), error: null }
   } catch (error: unknown) {
     if (error instanceof DomainException) {
       return { success: false, error: error.message, data: null }
@@ -40,6 +42,11 @@ export async function markAsReadAction(id: string): Promise<ActionResult<null>> 
   if (!session?.user?.id) return { success: false, error: "Unauthorized", data: null }
 
   try {
+    const notification = await notificationRepo.findById(id)
+    if (!notification || notification.userId !== session.user.id) {
+      throw new NotificationNotFoundException()
+    }
+
     await notificationRepo.markAsRead(id)
     return { success: true, data: null, error: null }
   } catch (error: unknown) {

@@ -1,7 +1,7 @@
 import { describe, expect, it, mock, beforeEach } from "bun:test";
 import { SendNotificationHandler } from "../use-cases/send-notification/send-notification.handler";
 import { UpdateUserSettingHandler } from "../use-cases/update-user-setting/update-user-setting.handler";
-import { NotificationRepository } from "@/modules/notifications/domain/repositories/notification.repository";
+import { INotificationRepository } from "@/modules/notifications/domain/repositories/notification-repository.interface";
 import { ISettingRepository } from "@/modules/setting/domain/repositories/setting-repository.interface";
 import { NotificationEntity, UserNotificationSettingsEntity } from "@/modules/notifications/domain/entities/notification.entity";
 import { Setting, SettingsValueMap, SettingKey } from "@/modules/setting/domain/entities/setting.entity";
@@ -10,10 +10,10 @@ import { Setting, SettingsValueMap, SettingKey } from "@/modules/setting/domain/
 mock.module("server-only", () => { return {} });
 
 describe("Notifications - Unit Tests", () => {
-  let mockNotificationRepository: NotificationRepository;
+  let mockNotificationRepository: INotificationRepository;
   let mockSettingRepository: ISettingRepository;
 
-  const dummyNotification: NotificationEntity = {
+  const dummyNotification: NotificationEntity = NotificationEntity.reconstruct({
     id: "notif-1",
     userId: "user-1",
     title: "Test Title",
@@ -24,7 +24,7 @@ describe("Notifications - Unit Tests", () => {
     readAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  });
 
   const dummySettings: UserNotificationSettingsEntity = {
     id: "settings-1",
@@ -48,7 +48,7 @@ describe("Notifications - Unit Tests", () => {
 
   beforeEach(() => {
     mockNotificationRepository = {
-      save: mock(() => Promise.resolve(dummyNotification)),
+      create: mock(() => Promise.resolve(dummyNotification)),
       findById: mock(() => Promise.resolve(dummyNotification)),
       findByUserId: mock(() => Promise.resolve([dummyNotification])),
       markAsRead: mock(() => Promise.resolve()),
@@ -69,7 +69,7 @@ describe("Notifications - Unit Tests", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Setting<K>)) as <K extends SettingKey>(key: K) => Promise<Setting<K>>,
-      findAll: mock(() => Promise.resolve([])),
+      findMany: mock(() => Promise.resolve([])),
       findByCategory: mock(() => Promise.resolve([])),
       upsert: mock(<K extends SettingKey>(key: K, value: SettingsValueMap[K]) => Promise.resolve({
         id: "global-1",
@@ -94,7 +94,7 @@ describe("Notifications - Unit Tests", () => {
 
       expect(result).not.toBeNull();
       expect(result?.title).toBe("Test Title");
-      expect(mockNotificationRepository.save).toHaveBeenCalled();
+      expect(mockNotificationRepository.create).toHaveBeenCalled();
     });
 
     it("should skip saving when global settings disable all channels", async () => {
@@ -115,7 +115,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).toBeNull();
-      expect(mockNotificationRepository.save).not.toHaveBeenCalled();
+      expect(mockNotificationRepository.create).not.toHaveBeenCalled();
     });
 
     it("should skip saving when user settings disable all channels", async () => {
@@ -142,7 +142,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).toBeNull();
-      expect(mockNotificationRepository.save).not.toHaveBeenCalled();
+      expect(mockNotificationRepository.create).not.toHaveBeenCalled();
     });
 
     it("should send notification with custom type and priority", async () => {
@@ -156,7 +156,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).not.toBeNull();
-      expect(mockNotificationRepository.save).toHaveBeenCalledWith(
+      expect(mockNotificationRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "security",
           priority: "critical",
@@ -174,7 +174,7 @@ describe("Notifications - Unit Tests", () => {
         message: "World",
       });
 
-      expect(mockNotificationRepository.save).toHaveBeenCalledWith(
+      expect(mockNotificationRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "general",
           priority: "medium",
@@ -203,7 +203,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).toBeNull();
-      expect(mockNotificationRepository.save).not.toHaveBeenCalled();
+      expect(mockNotificationRepository.create).not.toHaveBeenCalled();
     });
 
     it("should deliver notification for mandatory type even if not in settings", async () => {
@@ -218,7 +218,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).not.toBeNull();
-      expect(mockNotificationRepository.save).toHaveBeenCalled();
+      expect(mockNotificationRepository.create).toHaveBeenCalled();
     });
 
     it("should deliver notification for unsubscribed mandatory type (system)", async () => {
@@ -233,7 +233,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).not.toBeNull();
-      expect(mockNotificationRepository.save).toHaveBeenCalled();
+      expect(mockNotificationRepository.create).toHaveBeenCalled();
     });
 
     it("should deliver notification when user is subscribed to that type", async () => {
@@ -248,7 +248,7 @@ describe("Notifications - Unit Tests", () => {
       });
 
       expect(result).not.toBeNull();
-      expect(mockNotificationRepository.save).toHaveBeenCalled();
+      expect(mockNotificationRepository.create).toHaveBeenCalled();
     });
   });
 

@@ -4,10 +4,15 @@ import { UserImpersonatedEvent, UserImpersonationStoppedEvent } from "@/modules/
 import { UnauthorizedException } from "@/shared/domain/exceptions/unauthorized.exception";
 import { DomainException } from "@/shared/domain/exceptions/domain.exception";
 import { ImpersonateUserCommand } from "./impersonate-user.command";
-import { cookies } from "next/headers";
+import { ISessionStore } from "@/modules/auth/domain/services/session-store.interface";
+
+const IMPERSONATE_COOKIE = "impersonate_target";
 
 export class ImpersonateUserHandler {
-  constructor(private readonly userRepo: IUserRepository) {}
+  constructor(
+    private readonly userRepo: IUserRepository,
+    private readonly sessionStore: ISessionStore
+  ) {}
 
   async execute(command: ImpersonateUserCommand): Promise<{ success: boolean }> {
     // 1. Authenticate & Authorize the caller
@@ -15,8 +20,6 @@ export class ImpersonateUserHandler {
     if (!superAdmin || superAdmin.role !== "super_admin") {
       throw new UnauthorizedException("Only super_admins are permitted to impersonate other users.");
     }
-
-    const cookieStore = await cookies();
 
     if (command.targetUserId) {
       // START IMPERSONATION
@@ -30,7 +33,7 @@ export class ImpersonateUserHandler {
       }
 
       // Set cookie
-      cookieStore.set("impersonate_target", targetUser.id, {
+      await this.sessionStore.setCookie(IMPERSONATE_COOKIE, targetUser.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -39,19 +42,19 @@ export class ImpersonateUserHandler {
       });
 
       // Dispatch event
-      eventDispatcher.dispatch(new UserImpersonatedEvent(superAdmin.id, targetUser.id));
+      await eventDispatcher.dispatch(new UserImpersonatedEvent(superAdmin.id, targetUser.id));
     } else {
       // STOP IMPERSONATION
-      const currentImpersonatingId = cookieStore.get("impersonate_target")?.value;
+      const currentImpersonatingId = await this.sessionStore.getCookie(IMPERSONATE_COOKIE);
       if (!currentImpersonatingId) {
         return { success: true };
       }
 
       // Clear cookie
-      cookieStore.delete("impersonate_target");
+      await this.sessionStore.deleteCookie(IMPERSONATE_COOKIE);
 
       // Dispatch event
-      eventDispatcher.dispatch(new UserImpersonationStoppedEvent(superAdmin.id, currentImpersonatingId));
+      await eventDispatcher.dispatch(new UserImpersonationStoppedEvent(superAdmin.id, currentImpersonatingId));
     }
 
     return { success: true };

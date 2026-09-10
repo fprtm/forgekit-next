@@ -11,19 +11,19 @@ export class DrizzleProductRepository implements IProductRepository {
       limit: limit ?? 10,
       orderBy: [desc(products.createdAt)],
     })
-    return results
+    return results.map((result) => ProductEntity.reconstruct(result))
   }
 
   async findById(id: string): Promise<ProductEntity | null> {
     const result = await db.query.products.findFirst({
       where: eq(products.id, id),
     })
-    return result ?? null
+    return result ? ProductEntity.reconstruct(result) : null
   }
 
   async create(data: CreateProductInput): Promise<ProductEntity> {
     const [created] = await db.insert(products).values(data).returning()
-    return created
+    return ProductEntity.reconstruct(created)
   }
 
   async update(id: string, data: UpdateProductInput): Promise<ProductEntity> {
@@ -32,11 +32,11 @@ export class DrizzleProductRepository implements IProductRepository {
       .set({ ...data, updatedAt: new Date() })
       .where(eq(products.id, id))
       .returning()
-    return updated
+    return ProductEntity.reconstruct(updated)
   }
 
   async delete(id: string): Promise<ProductEntity> {
     const [deleted] = await db.delete(products).where(eq(products.id, id)).returning()
-    return deleted
+    return ProductEntity.reconstruct(deleted)
   }
 }

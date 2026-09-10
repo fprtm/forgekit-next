@@ -81,13 +81,16 @@ ForgeKit implements strict "secure-by-default" patterns:
 5. **Dynamic Modular Seeding**
    Every module manages its own data seeding locally under `infrastructure/seeder.ts` by exporting a named `seed` function: `export async function seed(db: NodePgDatabase)`. The global seeder runner `scripts/seed.ts` automatically scans the `modules/` directory at runtime, imports active seeders dynamically, and executes them with full type-safety and 100% decoupling.
 
+6. **Centralized Layout Tokens, Not Hardcoded Spacing**
+   Structural spacing (page padding, header layout, form-field gaps, icon sizes) is defined once as semantic classes in `src/app/globals.css`'s `@layer components` block — `.page-shell`, `.page-header`, `.page-title`, `.page-description`, `.content-stack`, `.form-stack`, `.icon-sm`, `.icon-md`. New pages should reach for these instead of one-off values like `text-3xl font-bold` or `space-y-8` — that's exactly the drift that made early versions of this template visually inconsistent across modules. Rescaling the whole app (tighter padding, a different base unit) is a one-line edit to `--spacing` in that same file, not a grep-and-replace.
+
 ---
 
 ## 💻 Getting Started
 
 ### Prerequisites
 - Install [Bun](https://bun.sh/)
-- PostgreSQL database (Local or Cloud)
+- PostgreSQL database — either your own, or use the bundled `docker-compose.yml` (see step 3)
 
 ### Installation
 
@@ -97,22 +100,38 @@ ForgeKit implements strict "secure-by-default" patterns:
    ```
 
 2. **Environment Variables**
-   Copy `.env.example` to `.env.local` and configure your database and authentication keys:
+   Copy `env.example` to `.env` and fill in the values (there is no leading dot on the source filename):
    ```bash
-   cp .env.example .env.local
+   cp env.example .env
    ```
+   At minimum, set `DATABASE_URL` and `AUTH_SECRET` (generate one with `bunx auth secret`). Every variable the app reads is validated at boot by `src/shared/config/env.ts` — an empty/invalid required value fails fast with a clear error instead of an obscure runtime crash.
 
 3. **Database Setup**
-   Push the Drizzle schema to your PostgreSQL database:
+   No local Postgres yet? Start one with the bundled compose file:
+   ```bash
+   docker compose up -d
+   ```
+   This starts Postgres on `localhost:5432` (`user: leviosa`, `password: leviosa`, `db: forge-kit`) — match `DATABASE_URL` in your `.env` to these values, or point it at your own database instead.
+
+   Then push the schema and seed demo data:
    ```bash
    bun run db:push
+   bun run db:seed
    ```
 
-4. **Start Development Server**
+4. **Log In**
+   The seeder creates test accounts on the `.test` TLD (safe, non-routable, obviously fake). The one you'll use most:
+   ```
+   Email:    superadmin@forgekit.test
+   Password: 00superadmin@forgekit.test
+   ```
+   `bun run db:seed`'s terminal output prints the full list (admin and regular-user accounts too) if you need a lower-privilege login to test permission boundaries.
+
+5. **Start Development Server**
    ```bash
    bun run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000) to view the application.
+   Open [http://localhost:3000](http://localhost:3000), log in with the credentials above, and you should land on the dashboard in well under a minute.
 
 ---
 
@@ -173,17 +192,17 @@ npx playwright show-report tests/playwright-report
 
 ## 📖 Blueprint for Adding a New Module
 
-When adding a new feature (e.g., `Invoices`), copy the structure of an existing robust module like `products`.
+When adding a new feature (e.g., `Invoices`), copy the structure of an existing robust module like `products`. For the full walkthrough with concrete code for every step, see **[`docs/adding-a-module.md`](docs/adding-a-module.md)**. Short version:
 
 1. Create `src/modules/invoices/`.
-2. Define `InvoiceEntity` and `IInvoiceRepository` in `domain/entities/` and `domain/repositories/`.
-3. Create custom exceptions like `InvoiceNotFoundException` in `domain/exceptions/`.
+2. Define `InvoiceEntity` (a class with `static create()`/`static reconstruct()` factories — see `src/modules/products/domain/entities/product.entity.ts`) and `IInvoiceRepository` in `domain/entities/` and `domain/repositories/`.
+3. Create custom exceptions in one grouped file, `domain/exceptions/invoice.exceptions.ts` (e.g. `InvoiceNotFoundException`).
 4. Create Drizzle `schema.ts` in `infrastructure/database/drizzle/`.
-5. Implement the repository adapter in `infrastructure/repositories/drizzle-impl/`.
+5. Implement the repository adapter in `infrastructure/database/repositories/`.
 6. Create Use Cases (e.g., `create-invoice.handler.ts` and `create-invoice.command.ts`) in `application/use-cases/create-invoice/`.
 7. Expose Server Actions in `presentation/http/actions/invoice.actions.ts`.
-8. Build Headless UI hooks and components in `presentation/ui/`.
-9. Assemble UI Pages in `presentation/ui/pages/` and route them in `src/app/(dashboard)/invoices/`.
+8. Build Headless UI hooks and components in `presentation/ui/` — use the shared layout classes from `src/app/globals.css` (`.page-shell`, `.page-header`, `.page-title`, `.content-stack`, etc.) instead of ad-hoc Tailwind spacing values, so new pages stay visually consistent with the rest of the app by default.
+9. Assemble UI Pages in `presentation/ui/pages/` and route them in `src/app/d/invoices/`.
 
 ---
 

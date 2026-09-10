@@ -1,22 +1,12 @@
 import { ProductEditPage } from "@/modules/products/presentation/ui/pages/edit"
-import { DrizzleProductRepository } from "@/modules/products/infrastructure/database/repositories/drizzle-product.repository"
-import { GetProductHandler } from "@/modules/products/application/use-cases/get-product/get-product.handler"
+import { getProductAction } from "@/modules/products/presentation/http/actions/product.actions"
 import { notFound } from "next/navigation"
-import { ProductEntity } from "@/modules/products/domain/entities/product.entity"
-
-const productRepo = new DrizzleProductRepository()
-const getProductUC = new GetProductHandler(productRepo)
 
 export default async function EditProductRoute({ params }: { params: Promise<{ id: string }> }) {
-  let product: ProductEntity | null = null;
-  try {
-    const { id } = await params;
-    product = await getProductUC.execute({ id })
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return notFound()
-  }
+  const { id } = await params
+  const result = await getProductAction(id)
 
-  if (!product) return notFound()
-  return <ProductEditPage product={product} />
+  if (!result.success || !result.data) return notFound()
+
+  return <ProductEditPage product={result.data} />
 }
