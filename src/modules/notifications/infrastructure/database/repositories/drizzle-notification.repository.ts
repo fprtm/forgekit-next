@@ -1,13 +1,11 @@
 import { db } from "@/db";
 import { eq, desc, and, count } from "drizzle-orm";
 import { notifications, userNotificationSettings } from "@/modules/notifications/infrastructure/database/drizzle/schema";
-import { NotificationRepository, PaginationOptions } from "@/modules/notifications/domain/repositories/notification.repository";
-import { NotificationEntity, UserNotificationSettingsEntity } from "@/modules/notifications/domain/entities/notification.entity";
+import { INotificationRepository, PaginationOptions } from "@/modules/notifications/domain/repositories/notification-repository.interface";
+import { CreateNotificationInput, NotificationEntity, NotificationRow, UserNotificationSettingsEntity } from "@/modules/notifications/domain/entities/notification.entity";
 
-export class DrizzleNotificationRepository implements NotificationRepository {
-  async save(
-    notification: Omit<NotificationEntity, "id" | "createdAt" | "updatedAt">
-  ): Promise<NotificationEntity> {
+export class DrizzleNotificationRepository implements INotificationRepository {
+  async create(notification: CreateNotificationInput): Promise<NotificationEntity> {
     const [row] = await db
       .insert(notifications)
       .values({
@@ -21,18 +19,7 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       })
       .returning();
 
-    return {
-      id: row.id,
-      userId: row.userId,
-      title: row.title,
-      message: row.message,
-      type: row.type as NotificationEntity["type"],
-      priority: row.priority as NotificationEntity["priority"],
-      read: row.read,
-      readAt: row.readAt,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+    return NotificationEntity.reconstruct(row as NotificationRow);
   }
 
   async findById(id: string): Promise<NotificationEntity | null> {
@@ -42,18 +29,7 @@ export class DrizzleNotificationRepository implements NotificationRepository {
       .where(eq(notifications.id, id));
 
     if (!row) return null;
-    return {
-      id: row.id,
-      userId: row.userId,
-      title: row.title,
-      message: row.message,
-      type: row.type as NotificationEntity["type"],
-      priority: row.priority as NotificationEntity["priority"],
-      read: row.read,
-      readAt: row.readAt,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+    return NotificationEntity.reconstruct(row as NotificationRow);
   }
 
   async findByUserId(userId: string, options?: PaginationOptions): Promise<NotificationEntity[]> {
@@ -68,18 +44,7 @@ export class DrizzleNotificationRepository implements NotificationRepository {
 
       const rows = await query;
 
-      return rows.map((row) => ({
-        id: row.id,
-        userId: row.userId,
-        title: row.title,
-        message: row.message,
-        type: row.type as NotificationEntity["type"],
-        priority: row.priority as NotificationEntity["priority"],
-        read: row.read,
-        readAt: row.readAt,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      }));
+      return rows.map((row) => NotificationEntity.reconstruct(row as NotificationRow));
     } catch (error) {
       console.error("[DrizzleNotificationRepository.findByUserId] Database error:", error);
       throw error;

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -13,13 +14,15 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { useLoginForm } from "./use-login-form";
 import { env } from "@/shared/config/env";
+import { routes } from "@/shared/config/routes";
 
 export function LoginForm() {
   const { form, onSubmit, handleGoogleSignIn, isLoading, isGoogleLoading } = useLoginForm();
   const showOAuth = env.NEXT_PUBLIC_ENABLE_OAUTH === "true";
+  const isDemoMode = env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   return (
-    <div className="space-y-5">
+    <div className="form-stack">
       {showOAuth && (
         <>
           {/* Continue with Google */}
@@ -28,12 +31,13 @@ export function LoginForm() {
             variant="outline"
             disabled={isLoading || isGoogleLoading}
             onClick={handleGoogleSignIn}
+            data-testid="login-google-button"
             className="w-full flex items-center justify-center gap-3 h-11 rounded-2xl border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.98] transition-all duration-200 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-white shadow-sm font-medium"
           >
             {isGoogleLoading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" />
+              <div className="icon-sm animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" />
             ) : (
-              <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+              <svg className="icon-sm" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -67,7 +71,7 @@ export function LoginForm() {
 
       {/* Credentials Form */}
       <Form {...form}>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form method="post" onSubmit={onSubmit} className="form-stack" data-testid="login-form">
           <FormField
             control={form.control}
             name="email"
@@ -79,6 +83,7 @@ export function LoginForm() {
                     type="email"
                     placeholder="name@example.com"
                     disabled={isLoading || isGoogleLoading}
+                    data-testid="login-email-input"
                     className="h-11 rounded-2xl border-zinc-200/80 bg-zinc-50/50 focus-visible:ring-zinc-900 focus-visible:ring-offset-0 dark:border-zinc-800 dark:bg-zinc-900/30 dark:focus-visible:ring-white transition-all"
                     {...field}
                   />
@@ -95,15 +100,20 @@ export function LoginForm() {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-zinc-700 dark:text-zinc-300 text-sm font-medium">Password</FormLabel>
-                  <a href="#" className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                  <Link
+                    href={routes.auth.forgotPassword}
+                    data-testid="forgot-password-link"
+                    className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <FormControl>
                   <Input
                     type="password"
                     placeholder="••••••••"
                     disabled={isLoading || isGoogleLoading}
+                    data-testid="login-password-input"
                     className="h-11 rounded-2xl border-zinc-200/80 bg-zinc-50/50 focus-visible:ring-zinc-900 focus-visible:ring-offset-0 dark:border-zinc-800 dark:bg-zinc-900/30 dark:focus-visible:ring-white transition-all"
                     {...field}
                   />
@@ -116,14 +126,28 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading || isGoogleLoading}
+            data-testid="login-submit-button"
             className="w-full h-11 rounded-2xl bg-zinc-900 text-white hover:bg-zinc-800 active:scale-[0.98] transition-all duration-200 dark:bg-white dark:text-black dark:hover:bg-zinc-100 shadow-md font-semibold mt-2"
           >
             {isLoading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-black" />
+              <div className="icon-sm animate-spin rounded-full border-2 border-white border-t-transparent dark:border-black" />
             ) : (
               "Sign In with Email"
             )}
           </Button>
+
+          {!isDemoMode && (
+            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+              Don&apos;t have an account?{" "}
+              <Link
+                href={routes.auth.register}
+                data-testid="login-to-register-link"
+                className="font-medium text-zinc-900 hover:underline dark:text-white"
+              >
+                Sign up
+              </Link>
+            </p>
+          )}
         </form>
       </Form>
     </div>

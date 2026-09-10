@@ -92,6 +92,9 @@ export async function seed(db: NodePgDatabase) {
         set: { id: item.id, name: item.name, password: hashedPassword, role: item.role },
       });
 
+    // Dev-only: prints plaintext seed passwords for local/test convenience.
+    // Safe because scripts/seed.ts refuses to run this seeder at all when
+    // NODE_ENV=production, so this never executes (or logs) in production.
     console.log(`   ➡️ Created [${item.role.toUpperCase()}] - Email: ${item.email} (Password: ${item.password})`);
   }
 

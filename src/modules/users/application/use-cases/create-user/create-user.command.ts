@@ -1,10 +1,9 @@
-import { AuthUser } from "@/modules/auth/domain/types"
 import { UserRole } from "@/shared/config/roles"
+import { AuthenticatedCommand } from "@/shared/domain/types/authenticated-command"
 
-export interface CreateUserCommand {
+export interface CreateUserCommand extends AuthenticatedCommand {
   name: string
   email: string
   password?: string
   role?: UserRole
-  currentUser?: AuthUser
 }

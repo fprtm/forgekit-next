@@ -14,9 +14,9 @@ export async function seed(db: NodePgDatabase) {
     {
       key: "business_name",
       value: {
-        name: "PsyCare Clinic",
-        shortName: "PsyCare",
-        description: "Pusat Layanan Konseling & Kesehatan Mental Terpadu.",
+        name: "ForgeKit Demo Business",
+        shortName: "ForgeKit",
+        description: "Sample business profile seeded by the ForgeKit boilerplate.",
       },
     },
     {
@@ -38,7 +38,7 @@ export async function seed(db: NodePgDatabase) {
         mode: "both",
         bankName: "BCA",
         accountNumber: "1234567890",
-        accountHolder: "PsyCare Clinic",
+        accountHolder: "ForgeKit Demo Business",
         confirmationPhone: "628123456789",
         manualInstructions: "Harap melampirkan bukti transfer dan menuliskan nama lengkap Anda pada pesan WhatsApp konfirmasi.",
       },

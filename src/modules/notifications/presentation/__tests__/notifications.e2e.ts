@@ -5,6 +5,7 @@ import {
   loginAsUser,
   createAuthenticatedContext,
 } from "@/shared/tests/e2e-helpers";
+import { routes } from "@/shared/config/routes";
 
 test.describe.serial("Notifications E2E", () => {
   let superContext: APIRequestContext;
@@ -270,7 +271,7 @@ test.describe.serial("Notifications E2E", () => {
 
     test.beforeEach(async ({ page }) => {
       await loginAsSuperAdmin(page);
-      await page.goto("/d");
+      await page.goto(routes.dashboard.root);
       await page.waitForTimeout(1500);
     });
 
@@ -327,7 +328,7 @@ test.describe.serial("Notifications E2E", () => {
       await userContext.delete("/api/notifications");
 
       await loginAsUser(page);
-      await page.goto("/d");
+      await page.goto(routes.dashboard.root);
       await page.waitForTimeout(1500);
 
       await page.getByRole("button", { name: "Notifications" }).click();
@@ -341,7 +342,7 @@ test.describe.serial("Notifications E2E", () => {
     test("should toggle email channel and persist", async ({ page }) => {
       await loginAsUser(page);
 
-      await page.goto("/d/settings/notifications", { waitUntil: "networkidle", timeout: 60000 });
+      await page.goto(routes.dashboard.settings.notifications, { waitUntil: "networkidle", timeout: 60000 });
       await page.waitForTimeout(1000);
 
       const emailSwitch = page.locator("#notif-email");
@@ -364,7 +365,7 @@ test.describe.serial("Notifications E2E", () => {
     test("should toggle product subscription and persist", async ({ page }) => {
       await loginAsUser(page);
 
-      await page.goto("/d/settings/notifications", { waitUntil: "networkidle", timeout: 60000 });
+      await page.goto(routes.dashboard.settings.notifications, { waitUntil: "networkidle", timeout: 60000 });
       await page.waitForTimeout(1000);
 
       const productSwitch = page.locator("#notif-sub-product");
@@ -387,7 +388,7 @@ test.describe.serial("Notifications E2E", () => {
     test("should show mandatory types (system, security) as disabled", async ({ page }) => {
       await loginAsUser(page);
 
-      await page.goto("/d/settings/notifications", { waitUntil: "networkidle", timeout: 60000 });
+      await page.goto(routes.dashboard.settings.notifications, { waitUntil: "networkidle", timeout: 60000 });
       await page.waitForTimeout(1000);
 
       const systemSwitch = page.locator("#notif-sub-system");
@@ -414,7 +415,7 @@ test.describe.serial("Notifications E2E", () => {
 
       await loginAsUser(page);
 
-      await page.goto("/d");
+      await page.goto(routes.dashboard.root);
       await page.waitForTimeout(1500);
 
       await page.getByRole("button", { name: "Notifications" }).click();
@@ -434,7 +435,7 @@ test.describe.serial("Notifications E2E", () => {
       });
 
       await loginAsUser(page);
-      await page.goto("/d");
+      await page.goto(routes.dashboard.root);
       await page.waitForTimeout(1500);
 
       await page.getByRole("button", { name: "Notifications" }).click();

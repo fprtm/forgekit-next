@@ -8,6 +8,8 @@ import { GetUnreadCountHandler } from "../../application/use-cases/get-unread-co
 import { MarkAllNotificationsReadHandler } from "../../application/use-cases/mark-all-notifications-read/mark-all-notifications-read.handler"
 import { UpdateUserSettingHandler } from "../../application/use-cases/update-user-setting/update-user-setting.handler"
 import { SendNotificationHandler } from "../../application/use-cases/send-notification/send-notification.handler"
+import { NotificationNotFoundException } from "../../domain/exceptions/notification.exceptions"
+import { sendNotificationSchema, updateNotificationSettingsSchema } from "../../application/validations"
 
 const notificationRepo = new DrizzleNotificationRepository()
 const settingRepo = new DrizzleSettingRepository()
@@ -39,12 +41,17 @@ export async function createNotificationHandler(req: NextRequest) {
     if (!session?.user?.id) return apiError("Unauthorized", 401)
 
     const body = await req.json()
+    const parsed = sendNotificationSchema.safeParse(body)
+    if (!parsed.success) {
+      return apiError(parsed.error.issues.map((issue) => issue.message).join(", "), 400)
+    }
+
     const notification = await sendNotificationUC.execute({
       userId: session.user.id,
-      title: body.title,
-      message: body.message,
-      type: body.type ?? "general",
-      priority: body.priority ?? "medium",
+      title: parsed.data.title,
+      message: parsed.data.message,
+      type: parsed.data.type ?? "general",
+      priority: parsed.data.priority ?? "medium",
     })
 
     if (!notification) {
@@ -75,6 +82,11 @@ export async function markAsReadHandler(_req: NextRequest, props: { params: Prom
     if (!session?.user?.id) return apiError("Unauthorized", 401)
 
     const { id } = await props.params
+    const notification = await notificationRepo.findById(id)
+    if (!notification || notification.userId !== session.user.id) {
+      throw new NotificationNotFoundException()
+    }
+
     await notificationRepo.markAsRead(id)
     return apiSuccess({ success: true })
   } catch (error: unknown) {
@@ -112,12 +124,17 @@ export async function updateSettingsHandler(req: NextRequest) {
     if (!session?.user?.id) return apiError("Unauthorized", 401)
 
     const body = await req.json()
+    const parsed = updateNotificationSettingsSchema.safeParse(body)
+    if (!parsed.success) {
+      return apiError(parsed.error.issues.map((issue) => issue.message).join(", "), 400)
+    }
+
     const settings = await updateUserSettingUC.execute({
       userId: session.user.id,
-      email: body.email,
-      push: body.push,
-      whatsapp: body.whatsapp,
-      subscriptions: body.subscriptions,
+      email: parsed.data.email,
+      push: parsed.data.push,
+      whatsapp: parsed.data.whatsapp,
+      subscriptions: parsed.data.subscriptions,
     })
 
     return apiSuccess(settings)

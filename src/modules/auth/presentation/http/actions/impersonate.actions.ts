@@ -3,11 +3,13 @@
 import { auth } from "@/shared/lib/auth";
 import { DrizzleUserRepository } from "@/modules/users/infrastructure/database/repositories/drizzle-user.repository";
 import { ImpersonateUserHandler } from "@/modules/auth/application/use-cases/impersonate-user/impersonate-user.handler";
+import { NextCookieSessionStore } from "@/modules/auth/infrastructure/services/next-cookie-session-store";
 import { can } from "@/modules/auth/domain/policies";
 import { DomainException } from "@/shared/domain/exceptions/domain.exception";
 
 const userRepo = new DrizzleUserRepository();
-const impersonateUC = new ImpersonateUserHandler(userRepo);
+const sessionStore = new NextCookieSessionStore();
+const impersonateUC = new ImpersonateUserHandler(userRepo, sessionStore);
 
 type ActionResult<T> =
   | { success: true; data: T; error: null }

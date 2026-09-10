@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Coins, ShieldCheck, Settings, Link2 } from "lucide-react";
+import { Building2, Coins, ShieldCheck, Settings, Link2, MoreHorizontal } from "lucide-react";
 import Wrapper from "@/shared/components/layout/wrapper";
 import {
   Card,
@@ -11,6 +11,12 @@ import {
   CardFooter,
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/shared/components/ui/dropdown-menu";
 import { getSettingsAction } from "../../http/actions/setting.actions";
 import { BusinessForm } from "../components/form/business-form";
 import { PaymentForm } from "../components/form/payment-form";
@@ -24,10 +30,25 @@ import {
   FonnteCredentialsSetting,
 } from "../../../domain/entities/setting.entity";
 
+type SettingTab = "business" | "payment" | "policy" | "integrations";
+
+const SETTING_TABS: {
+  id: SettingTab;
+  label: string;
+  icon: typeof Building2;
+  testId: string;
+}[] = [
+  { id: "business", label: "Profile", icon: Building2, testId: "profile-tab" },
+  { id: "payment", label: "Payments", icon: Coins, testId: "payments-tab" },
+  { id: "policy", label: "Policies", icon: ShieldCheck, testId: "policies-tab" },
+  { id: "integrations", label: "Integrations", icon: Link2, testId: "integrations-tab" },
+];
+
+// Only this many tabs get their own button on narrow screens — the rest live in the "More" dropdown.
+const VISIBLE_ON_MOBILE = 2;
+
 export default function SettingPage() {
-  const [activeTab, setActiveTab] = useState<
-    "business" | "payment" | "policy" | "integrations"
-  >("business");
+  const [activeTab, setActiveTab] = useState<SettingTab>("business");
   const [isLoading, setIsLoading] = useState(true);
 
   // Loaded Settings
@@ -121,7 +142,7 @@ export default function SettingPage() {
   if (isLoading) {
     return (
       <Wrapper>
-        <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto py-6">
+        <div className="page-shell max-w-3xl mx-auto">
           <div className="space-y-2">
             <Skeleton className="h-10 w-48" />
             <Skeleton className="h-5 w-80" />
@@ -157,80 +178,100 @@ export default function SettingPage() {
 
   return (
     <Wrapper>
-      <div className="flex flex-col gap-8 w-full mx-auto py-6">
+      <div className="page-shell">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="page-header">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black">
-                <Settings className="h-5 w-5" />
+                <Settings className="icon-md" />
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight">
-                System Settings
-              </h1>
+              <h1 className="page-title">System Settings</h1>
             </div>
-            <p className="text-muted-foreground text-sm">
-              Configure clinic profile, payment parameters, and client
+            <p className="page-description">
+              Configure your business profile, payment parameters, and
               cancellation policies.
             </p>
           </div>
         </div>
 
-        <div className="w-full md:max-w-3xl mx-auto space-y-8">
-          {/* Tab Navigation */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800 space-x-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/50 rounded w-full">
-            <button
-              id="setting-tab-business"
-              type="button"
-              onClick={() => setActiveTab("business")}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded transition-all duration-300 w-full cursor-pointer ${
-                activeTab === "business"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <Building2 className="h-4 w-4" />
-              <span>Profile</span>
-            </button>
-            <button
-              id="setting-tab-payment"
-              type="button"
-              onClick={() => setActiveTab("payment")}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded transition-all duration-300 w-full cursor-pointer ${
-                activeTab === "payment"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <Coins className="h-4 w-4" />
-              <span>Payments</span>
-            </button>
-            <button
-              id="setting-tab-policy"
-              type="button"
-              onClick={() => setActiveTab("policy")}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded transition-all duration-300 w-full cursor-pointer ${
-                activeTab === "policy"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Policies</span>
-            </button>
-            <button
-              id="setting-tab-integrations"
-              type="button"
-              onClick={() => setActiveTab("integrations")}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded transition-all duration-300 w-full cursor-pointer ${
-                activeTab === "integrations"
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              <Link2 className="h-4 w-4" />
-              <span>Integrations</span>
-            </button>
+        <div className="w-full md:max-w-3xl mx-auto content-stack">
+          {/* Tab Navigation — full bar on md+, "More" overflow dropdown on narrow screens */}
+          <div className="hidden md:flex border-b border-zinc-200 dark:border-zinc-800 space-x-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/50 rounded w-full">
+            {SETTING_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                id={`setting-tab-${tab.id}`}
+                data-testid={tab.testId}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded transition-all duration-300 w-full cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <tab.icon className="icon-sm" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex md:hidden border-b border-zinc-200 dark:border-zinc-800 gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/50 rounded w-full">
+            {SETTING_TABS.slice(0, VISIBLE_ON_MOBILE).map((tab) => (
+              <button
+                key={tab.id}
+                id={`setting-tab-${tab.id}`}
+                data-testid={tab.testId}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded transition-all duration-300 flex-1 min-w-0 cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                <tab.icon className="icon-sm shrink-0" />
+                <span className="truncate">{tab.label}</span>
+              </button>
+            ))}
+
+            {(() => {
+              const overflowTabs = SETTING_TABS.slice(VISIBLE_ON_MOBILE);
+              const activeOverflowTab = overflowTabs.find((tab) => tab.id === activeTab);
+              const TriggerIcon = activeOverflowTab?.icon ?? MoreHorizontal;
+
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      data-testid="settings-tabs-more-trigger"
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium rounded transition-all duration-300 flex-1 min-w-0 cursor-pointer ${
+                        activeOverflowTab
+                          ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5"
+                          : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                      }`}
+                    >
+                      <TriggerIcon className="icon-sm shrink-0" />
+                      <span className="truncate">{activeOverflowTab?.label ?? "More"}</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {overflowTabs.map((tab) => (
+                      <DropdownMenuItem
+                        key={tab.id}
+                        data-testid={tab.testId}
+                        onClick={() => setActiveTab(tab.id)}
+                      >
+                        <tab.icon className="icon-sm" />
+                        <span>{tab.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })()}
           </div>
 
           {/* Tab Contents */}

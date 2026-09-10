@@ -1,18 +1,6 @@
 import { UnauthorizedException } from "@/shared/domain/exceptions/unauthorized.exception";
-
-export interface DashboardStats {
-  totalUsers: number;
-  totalProducts: number;
-  totalAuditLogs: number;
-  recentLogs: Array<{ action: string; entityName: string; createdAt: Date }>;
-}
-
-export interface IStatReader {
-  countUsers(): Promise<number>;
-  countProducts(): Promise<number>;
-  countLogs(): Promise<number>;
-  getRecentLogs(limit: number): Promise<Array<{ action: string; entityName: string; createdAt: Date }>>;
-}
+import { DashboardStats } from "../../../domain/entities/dashboard-stats";
+import { IStatReader } from "../../../domain/repositories/stat-reader.interface";
 
 export class GetDashboardStatsHandler {
   constructor(private readonly statReader: IStatReader) {}

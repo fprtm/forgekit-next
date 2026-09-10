@@ -8,6 +8,16 @@ import { AuthUser } from "@/modules/auth/domain/types"
 import { useProductTable } from "../../hooks/use-product-table"
 import { PermissionGate } from "@/modules/auth/presentation/ui/components/permission-gate"
 import { DataTable } from "@/shared/components/data-table/data-table"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/shared/components/ui/alert-dialog"
 import "@/modules/products/domain/policies";
 
 export function ProductTable({
@@ -17,7 +27,7 @@ export function ProductTable({
   data: ProductEntity[]
   currentUser: AuthUser | null | undefined
 }) {
-  const { isDeleting, handleDelete } = useProductTable()
+  const { isDeleting, pendingDeleteId, openConfirm, cancelDelete, confirmDelete } = useProductTable()
 
   const columns: ColumnDef<ProductEntity>[] = [
     {
@@ -60,7 +70,7 @@ export function ProductTable({
                 variant="destructive"
                 size="sm"
                 disabled={isDeleting}
-                onClick={() => handleDelete(product.id)}
+                onClick={() => openConfirm(product.id)}
                 data-testid={`delete-button-${product.id}`}
               >
                 Delete
@@ -73,6 +83,30 @@ export function ProductTable({
   ]
 
   return (
-    <DataTable columns={columns} data={data} searchKey="name" />
+    <>
+      <DataTable columns={columns} data={data} searchKey="name" />
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => { if (!open) cancelDelete() }}>
+        <AlertDialogContent data-testid="delete-confirm-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this product. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="cancel-delete-button" onClick={cancelDelete}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              data-testid="confirm-delete-button"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

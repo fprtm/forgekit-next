@@ -19,7 +19,7 @@ export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid="product-form">
         <FormField
           control={form.control}
           name="name"
@@ -27,13 +27,13 @@ export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
             <FormItem>
               <FormLabel>Product Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter product name" {...field} />
+                <Input placeholder="Enter product name" {...field} data-testid="product-name-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="description"
@@ -41,7 +41,7 @@ export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="Enter product description" {...field} value={field.value || ""} />
+                <Input placeholder="Enter product description" {...field} value={field.value || ""} data-testid="product-description-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -55,11 +55,12 @@ export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
             <FormItem>
               <FormLabel>Price ($)</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  placeholder="0.00" 
-                  {...field} 
-                  onChange={e => field.onChange(parseFloat(e.target.value))} 
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  {...field}
+                  onChange={e => field.onChange(parseFloat(e.target.value))}
+                  data-testid="product-price-input"
                 />
               </FormControl>
               <FormMessage />
@@ -67,7 +68,11 @@ export function ProductForm({ initialData }: { initialData?: ProductEntity }) {
           )}
         />
 
-        <Button type="submit" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          data-testid={isEditing ? "update-product-submit-button" : "create-product-submit-button"}
+        >
           {form.formState.isSubmitting ? "Saving..." : isEditing ? "Update Product" : "Create Product"}
         </Button>
       </form>

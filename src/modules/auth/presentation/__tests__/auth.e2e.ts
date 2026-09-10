@@ -1,5 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import { loginAsSuperAdmin, createAuthenticatedContext } from "@/shared/tests/e2e-helpers";
+import { routes } from "@/shared/config/routes";
 
 const TARGET_USER_ID = "e2e-user-1";
 
@@ -72,14 +73,14 @@ test.describe.serial("Auth UI - Impersonation via Users Table", () => {
   });
 
   test("should impersonate a user from the table and stop via banner", async ({ page }) => {
-    await page.goto("/d/users/accounts");
+    await page.goto(routes.dashboard.users.accounts);
 
     const targetRow = page.locator("tr").filter({ hasText: "User Satu Test" });
     const impersonateBtn = targetRow.getByRole("button", { name: "Impersonate" });
     await expect(impersonateBtn).toBeVisible();
     await impersonateBtn.click();
 
-    await page.waitForURL("/d");
+    await page.waitForURL(routes.dashboard.root);
     const banner = page.getByText(/You are impersonating/);
     await expect(banner).toBeVisible({ timeout: 10000 });
     await expect(banner).toContainText("User Satu Test");

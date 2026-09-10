@@ -7,6 +7,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import Link from "next/link"
 import { formatRole } from "@/shared/lib/utils"
+import { routes } from "@/shared/config/routes"
 import { UserEntity } from "../../../../domain/entities/user.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
 import { useUserTable } from "../../hooks/use-user-table"
@@ -22,6 +23,16 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/shared/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/shared/components/ui/alert-dialog"
 import { Input } from "@/shared/components/ui/input"
 import {
   Avatar,
@@ -41,7 +52,7 @@ export function UserTable({
   editHrefSuffix?: string
   showExtraActions?: boolean
 }) {
-  const { isDeleting, handleDelete, isResetting, resetResult, handleResetPassword, closeResetResult } = useUserTable()
+  const { isDeleting, pendingDeleteId, openConfirm, cancelDelete, confirmDelete, isResetting, resetResult, handleResetPassword, closeResetResult } = useUserTable()
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const router = useRouter()
@@ -129,7 +140,7 @@ export function UserTable({
                       setImpersonatingId(user.id)
                       const res = await impersonateUserAction(user.id)
                       if (res.success) {
-                        router.push("/d")
+                        router.push(routes.dashboard.root)
                         router.refresh()
                       }
                       setImpersonatingId(null)
@@ -168,7 +179,7 @@ export function UserTable({
                   variant="destructive"
                   size="sm"
                   disabled={isDeleting}
-                  onClick={() => handleDelete(user.id)}
+                  onClick={() => openConfirm(user.id)}
                   data-testid={`delete-button-${user.id}`}
                 >
                   Delete
@@ -185,7 +196,7 @@ export function UserTable({
     <>
       <DataTable columns={columns} data={data} searchKey="user" />
       <Dialog open={!!resetResult} onOpenChange={(open) => { if (!open) closeResetResult() }}>
-        <DialogContent>
+        <DialogContent data-testid="reset-password-result-dialog">
           <DialogHeader>
             <DialogTitle>Password Reset Successful</DialogTitle>
             <DialogDescription>
@@ -197,11 +208,12 @@ export function UserTable({
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email</label>
                 <div className="flex items-center gap-2">
-                  <Input value={resetResult.email} readOnly className="flex-1" />
+                  <Input value={resetResult.email} readOnly className="flex-1" data-testid="reset-result-email-input" />
                   <Button
                     variant="outline"
                     size="icon-sm"
                     onClick={() => copyToClipboard(resetResult.email, "email")}
+                    data-testid="copy-email-button"
                   >
                     {copiedField === "email" ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
                   </Button>
@@ -210,11 +222,12 @@ export function UserTable({
               <div className="space-y-2">
                 <label className="text-sm font-medium">New Password</label>
                 <div className="flex items-center gap-2">
-                  <Input value={resetResult.newPassword} readOnly className="flex-1 font-mono" />
+                  <Input value={resetResult.newPassword} readOnly className="flex-1 font-mono" data-testid="reset-result-password-input" />
                   <Button
                     variant="outline"
                     size="icon-sm"
                     onClick={() => copyToClipboard(resetResult.newPassword, "password")}
+                    data-testid="copy-password-button"
                   >
                     {copiedField === "password" ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
                   </Button>
@@ -224,11 +237,33 @@ export function UserTable({
           )}
           <DialogFooter>
             <DialogClose asChild>
-              <Button onClick={closeResetResult}>Close</Button>
+              <Button onClick={closeResetResult} data-testid="close-reset-result-button">Close</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => { if (!open) cancelDelete() }}>
+        <AlertDialogContent data-testid="delete-confirm-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this user. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="cancel-delete-button" onClick={cancelDelete}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              data-testid="confirm-delete-button"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

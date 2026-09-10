@@ -2,15 +2,18 @@ import { eventDispatcher } from "@/shared/application/services/event-dispatcher.
 import { UserLoggedInEvent, UserLoggedOutEvent } from "@/modules/auth/domain/events/auth.events";
 import { UserImpersonatedEvent, UserImpersonationStoppedEvent } from "@/modules/auth/domain/events/impersonate.events";
 import { LogActionHandler } from "@/modules/audit-logs/application/use-cases/log-action/log-action.handler";
-import { DrizzleAuditLogRepository } from "@/modules/audit-logs/infrastructure/repositories/drizzle-impl/drizzle-audit-log.repository";
-
-const auditLogRepo = new DrizzleAuditLogRepository();
-const logActionUC = new LogActionHandler(auditLogRepo);
+import { IAuditLogRepository } from "@/modules/audit-logs/domain/repositories/audit-log-repository.interface";
 
 export class AuthAuditListener {
+  private readonly logActionUC: LogActionHandler;
+
+  constructor(auditLogRepo: IAuditLogRepository) {
+    this.logActionUC = new LogActionHandler(auditLogRepo);
+  }
+
   public registerListeners(): void {
     eventDispatcher.register<UserLoggedInEvent>("UserLoggedInEvent", async (event) => {
-      await logActionUC.execute({
+      await this.logActionUC.execute({
         action: "CREATE",
         entityName: "Auth",
         actorId: event.userId,
@@ -19,7 +22,7 @@ export class AuthAuditListener {
     });
 
     eventDispatcher.register<UserLoggedOutEvent>("UserLoggedOutEvent", async (event) => {
-      await logActionUC.execute({
+      await this.logActionUC.execute({
         action: "UPDATE",
         entityName: "Auth",
         actorId: event.userId,
@@ -28,7 +31,7 @@ export class AuthAuditListener {
     });
 
     eventDispatcher.register<UserImpersonatedEvent>("UserImpersonatedEvent", async (event) => {
-      await logActionUC.execute({
+      await this.logActionUC.execute({
         action: "CREATE",
         entityName: "Auth",
         actorId: event.superAdminId,
@@ -37,7 +40,7 @@ export class AuthAuditListener {
     });
 
     eventDispatcher.register<UserImpersonationStoppedEvent>("UserImpersonationStoppedEvent", async (event) => {
-      await logActionUC.execute({
+      await this.logActionUC.execute({
         action: "UPDATE",
         entityName: "Auth",
         actorId: event.superAdminId,
@@ -46,6 +49,3 @@ export class AuthAuditListener {
     });
   }
 }
-
-export const authAuditListener = new AuthAuditListener();
-authAuditListener.registerListeners();

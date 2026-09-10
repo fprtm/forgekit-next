@@ -2,10 +2,27 @@ import { describe, expect, it, mock } from "bun:test"
 import { ValidateCredentialsHandler } from "../use-cases/validate-credentials/validate-credentials.handler"
 import { IPasswordHasher } from "../../domain/services/password-hasher.interface"
 import { IUserRepository } from "@/modules/users/domain/repositories/user-repository.interface"
-import { UserEntity } from "@/modules/users/domain/entities/user.entity"
+import { UserEntity, UserProfile } from "@/modules/users/domain/entities/user.entity"
 
 describe("Auth Bounded Context - Unit & Validation Tests", () => {
-  const dummyUser: UserEntity = {
+  const dummyProfile: UserProfile = {
+    id: "profile-1",
+    userId: "user-1",
+    bio: null,
+    phoneNumber: null,
+    dateOfBirth: null,
+    gender: null,
+    preferredPronouns: null,
+    address: null,
+    city: null,
+    state: null,
+    country: null,
+    postalCode: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+
+  const dummyUser: UserEntity = UserEntity.reconstruct({
     id: "user-1",
     name: "John Doe",
     email: "john@example.com",
@@ -13,9 +30,10 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
     image: null,
     role: "user",
     password: "hashed-password",
+    isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-  }
+  })
 
   it("should validate credentials successfully", async () => {
     const mockUserRepository: IUserRepository = {
@@ -26,6 +44,9 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
       updatePassword: mock(() => Promise.resolve(dummyUser)),
+      findProfileByUserId: mock(() => Promise.resolve(null)),
+      upsertProfile: mock(() => Promise.resolve(dummyProfile)),
+      updateWithProfile: mock(() => Promise.resolve({ user: dummyUser, profile: dummyProfile })),
     }
 
     const mockPasswordHasher: IPasswordHasher = {
@@ -53,6 +74,9 @@ describe("Auth Bounded Context - Unit & Validation Tests", () => {
       update: mock(() => Promise.resolve(dummyUser)),
       delete: mock(() => Promise.resolve(dummyUser)),
       updatePassword: mock(() => Promise.resolve(dummyUser)),
+      findProfileByUserId: mock(() => Promise.resolve(null)),
+      upsertProfile: mock(() => Promise.resolve(dummyProfile)),
+      updateWithProfile: mock(() => Promise.resolve({ user: dummyUser, profile: dummyProfile })),
     }
 
     const mockPasswordHasher: IPasswordHasher = {

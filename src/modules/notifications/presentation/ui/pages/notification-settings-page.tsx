@@ -6,24 +6,22 @@ import { NotificationSettingsForm } from "../components/notification-settings-fo
 export function NotificationSettingsPage() {
   return (
     <Wrapper>
-      <div className="flex flex-col gap-8 w-full mx-auto py-6">
-        <div className="flex items-center justify-between">
+      <div className="page-shell">
+        <div className="page-header">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black">
-                <Bell className="h-5 w-5" />
+                <Bell className="icon-md" />
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight">
-                Notification Settings
-              </h1>
+              <h1 className="page-title">Notification Settings</h1>
             </div>
-            <p className="text-muted-foreground text-sm">
+            <p className="page-description">
               Manage your notification channel preferences
             </p>
           </div>
         </div>
 
-        <div className="w-full md:max-w-3xl mx-auto space-y-8">
+        <div className="w-full md:max-w-3xl mx-auto content-stack">
           <NotificationSettingsForm />
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
+import { routes } from "@/shared/config/routes"
 
 export default function UsersPage() {
-  redirect("/d/users/accounts")
+  redirect(routes.dashboard.users.accounts)
 }

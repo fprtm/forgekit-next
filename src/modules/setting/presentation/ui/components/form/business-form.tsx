@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { toast } from "sonner";
+import React from "react";
 import {
   Building2,
   Clock,
@@ -14,7 +13,32 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Label } from "@/shared/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import {
   Card,
   CardHeader,
@@ -23,7 +47,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/shared/components/ui/card";
-import { updateSettingAction, deleteSettingAction } from "../../../http/actions/setting.actions";
+import { useBusinessForm } from "../../hooks/use-business-form";
 
 const TIMEZONES = [
   { value: "Asia/Jakarta", label: "WIB - Asia/Jakarta (GMT+7)" },
@@ -48,217 +72,194 @@ export function BusinessForm({
   initialDescription,
   initialTimezone,
 }: BusinessFormProps) {
-  const [businessName, setBusinessName] = useState(initialName);
-  const [shortName, setShortName] = useState(initialShortName);
-  const [description, setDescription] = useState(initialDescription);
-  const [timezone, setTimezone] = useState(initialTimezone);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!businessName.trim()) {
-      toast.error("Business name cannot be empty");
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const nameRes = await updateSettingAction("business_name", {
-        name: businessName.trim(),
-        shortName: shortName.trim(),
-        description: description.trim(),
-      });
-      const tzRes = await updateSettingAction("timezone", {
-        value: timezone,
-      });
-
-      if (nameRes.success && tzRes.success) {
-        toast.success(
-          "Business profile updated successfully! Please refresh the page to apply branding & layout updates globally.",
-        );
-      } else {
-        toast.error(
-          nameRes.error || tzRes.error || "Failed to update business profile",
-        );
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      toast.error("Failed to save business settings");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleReset = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to reset your business settings to default?",
-      )
-    ) {
-      return;
-    }
-    setIsResetting(true);
-    try {
-      const nameRes = await deleteSettingAction("business_name");
-      const tzRes = await deleteSettingAction("timezone");
-
-      if (nameRes.success && tzRes.success) {
-        setBusinessName("");
-        setShortName("");
-        setDescription("");
-        setTimezone("Asia/Jakarta");
-        toast.success(
-          "Business settings reset to system defaults! Please refresh the page to apply changes.",
-        );
-      } else {
-        toast.error(nameRes.error || tzRes.error || "Failed to reset settings");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      toast.error("Failed to reset settings");
-    } finally {
-      setIsResetting(false);
-    }
-  };
+  const { form, onSubmit, onReset, isResetting } = useBusinessForm({
+    initialName,
+    initialShortName,
+    initialDescription,
+    initialTimezone,
+  });
+  const isSaving = form.formState.isSubmitting;
 
   return (
-    <form onSubmit={handleSave}>
-      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <Building2 className="h-5 w-5 text-zinc-500" />
-            Business Profile Settings
-          </CardTitle>
-          <CardDescription>
-            Manage public clinic identity and operational timezone
-            configurations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label
-              htmlFor="setting-business-name"
-              className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-            >
-              Clinic / Business Name
-            </Label>
-            <div className="relative">
-              <Building2 className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-              <Input
-                id="setting-business-name"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="e.g. PsyCare Healing Center"
-                className="pl-10 h-11"
-                required
-                disabled={isSaving || isResetting}
-              />
-            </div>
-          </div>
+    <Form {...form}>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} data-testid="business-form">
+        <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
+              <Building2 className="icon-md text-zinc-500" />
+              Business Profile Settings
+            </CardTitle>
+            <CardDescription>
+              Manage your public business identity and operational timezone
+              configuration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="form-stack">
+            <FormField
+              control={form.control}
+              name="businessName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Business Name
+                  </FormLabel>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-3 icon-sm text-zinc-400" />
+                    <FormControl>
+                      <Input
+                        data-testid="business-name-input"
+                        placeholder="e.g. ForgeKit Demo Business"
+                        className="pl-10 h-11"
+                        disabled={isSaving || isResetting}
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="setting-business-short-name"
-              className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-            >
-              Clinic Short Name (for Sidebar & Logo)
-            </Label>
-            <div className="relative">
-              <Type className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-              <Input
-                id="setting-business-short-name"
-                value={shortName}
-                onChange={(e) => setShortName(e.target.value)}
-                placeholder="e.g. Psy"
-                className="pl-10 h-11"
-                disabled={isSaving || isResetting}
-              />
-            </div>
-          </div>
+            <FormField
+              control={form.control}
+              name="shortName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Short Name (for Sidebar & Logo)
+                  </FormLabel>
+                  <div className="relative">
+                    <Type className="absolute left-3 top-3 icon-sm text-zinc-400" />
+                    <FormControl>
+                      <Input
+                        data-testid="business-short-name-input"
+                        placeholder="e.g. FK"
+                        className="pl-10 h-11"
+                        disabled={isSaving || isResetting}
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="setting-business-description"
-              className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-            >
-              Clinic Description / Tagline (Splash Screen Intro)
-            </Label>
-            <div className="relative">
-              <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-zinc-400 font-semibold" />
-              <Textarea
-                id="setting-business-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g. Your dedicated platform for seamless psychological consultation..."
-                className="pl-10 min-h-[80px] pt-2"
-                disabled={isSaving || isResetting}
-              />
-            </div>
-          </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Description / Tagline (Splash Screen Intro)
+                  </FormLabel>
+                  <div className="relative">
+                    <AlignLeft className="absolute left-3 top-3 icon-sm text-zinc-400 font-semibold" />
+                    <FormControl>
+                      <Textarea
+                        data-testid="business-description-input"
+                        placeholder="e.g. A short tagline describing your business..."
+                        className="pl-10 min-h-[80px] pt-2"
+                        disabled={isSaving || isResetting}
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="setting-timezone"
-              className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-            >
-              Operating Timezone
-            </Label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-              <select
-                id="setting-timezone"
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full pl-10 pr-4 h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition-all appearance-none cursor-pointer"
-                disabled={isSaving || isResetting}
-              >
-                {TIMEZONES.map((tz) => (
-                  <option
-                    key={tz.value}
-                    value={tz.value}
-                    className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Operating Timezone
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isSaving || isResetting}
                   >
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
-                ▼
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between items-center border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/20 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            id="setting-business-reset-btn"
-            onClick={handleReset}
-            disabled={isSaving || isResetting}
-            className="rounded-xl px-4 h-10 gap-2 text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 cursor-pointer active:scale-[0.98]"
-          >
-            {isResetting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RotateCcw className="h-4 w-4" />
-            )}
-            <span>Reset Defaults</span>
-          </Button>
-          <Button
-            type="submit"
-            id="setting-business-save-btn"
-            disabled={isSaving || isResetting}
-            className="rounded-xl px-5 h-10 gap-2 cursor-pointer transition-all active:scale-[0.98]"
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            <span>Save Changes</span>
-          </Button>
-        </CardFooter>
-      </Card>
-    </form>
+                    <FormControl>
+                      <SelectTrigger
+                        data-testid="timezone-select"
+                        className="w-full h-11"
+                      >
+                        <Clock className="icon-sm text-zinc-400" />
+                        <SelectValue placeholder="Select a timezone" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+          <CardFooter className="flex justify-between items-center border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/20 py-4">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  id="setting-business-reset-btn"
+                  data-testid="reset-defaults-button"
+                  disabled={isSaving || isResetting}
+                >
+                  {isResetting ? (
+                    <Loader2 className="icon-sm animate-spin" />
+                  ) : (
+                    <RotateCcw className="icon-sm" />
+                  )}
+                  <span>Reset Defaults</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent data-testid="reset-defaults-confirm-dialog">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset business settings?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to reset your business settings to
+                    default? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="cancel-reset-button">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    data-testid="confirm-reset-button"
+                    onClick={onReset}
+                  >
+                    Reset
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button
+              type="submit"
+              id="setting-business-save-btn"
+              data-testid="save-business-settings-button"
+              disabled={isSaving || isResetting}
+            >
+              {isSaving ? (
+                <Loader2 className="icon-sm animate-spin" />
+              ) : (
+                <Save className="icon-sm" />
+              )}
+              <span>Save Changes</span>
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+    </Form>
   );
 }

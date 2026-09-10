@@ -3,6 +3,7 @@ import { UserTable } from "../components/table"
 import { UserEntity } from "../../../domain/entities/user.entity"
 import { AuthUser } from "@/modules/auth/domain/types"
 import Wrapper from "@/shared/components/layout/wrapper"
+import { Card, CardContent } from "@/shared/components/ui/card"
 
 export function UserRoleListPage({
   users,
@@ -13,12 +14,16 @@ export function UserRoleListPage({
 }) {
   return (
     <Wrapper>
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-      </div>
+      <div className="page-shell">
+        <div className="page-header">
+          <h1 className="page-title">Users</h1>
+        </div>
 
-      <div className="bg-white p-6 border rounded-lg shadow-sm">
-        <UserTable data={users} currentUser={currentUser} editHrefSuffix="?profile=true" showExtraActions={false} />
+        <Card>
+          <CardContent>
+            <UserTable data={users} currentUser={currentUser} editHrefSuffix="?profile=true" showExtraActions={false} />
+          </CardContent>
+        </Card>
       </div>
     </Wrapper>
   )

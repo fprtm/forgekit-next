@@ -11,10 +11,14 @@ export const env = createEnv({
         UPSTASH_REDIS_REST_URL: z.string().optional(),
         UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
         REDIS_URL: z.string().optional(),
+        LOG_LEVEL: z
+            .enum(["fatal", "error", "warn", "info", "debug", "trace"])
+            .default("info"),
     },
     client: {
         NEXT_PUBLIC_APP_URL: z.url(),
         NEXT_PUBLIC_ENABLE_OAUTH: z.string().optional().default("false"),
+        NEXT_PUBLIC_DEMO_MODE: z.string().optional().default("false"),
     },
     runtimeEnv: {
         DATABASE_URL: process.env.DATABASE_URL,
@@ -25,7 +29,9 @@ export const env = createEnv({
         UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
         UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
         REDIS_URL: process.env.REDIS_URL,
+        LOG_LEVEL: process.env.LOG_LEVEL,
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
         NEXT_PUBLIC_ENABLE_OAUTH: process.env.NEXT_PUBLIC_ENABLE_OAUTH,
+        NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
     },
 })

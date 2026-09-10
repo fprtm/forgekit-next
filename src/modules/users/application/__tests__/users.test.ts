@@ -15,16 +15,17 @@ mock.module("server-only", () => { return {} });
 
 describe("Users Bounded Context - Unit & Validation Tests", () => {
   let mockUserRepository: IUserRepository;
-  const dummyUser: UserEntity = {
+  const dummyUser: UserEntity = UserEntity.reconstruct({
     id: "user-1",
     name: "John Doe",
     email: "john@example.com",
     emailVerified: new Date(),
     image: null,
     role: "user",
+    isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  });
 
   const superAdminUser = { id: "admin-1", role: "super_admin" as const };
 
@@ -37,6 +38,48 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
       update: mock((id, data) => Promise.resolve({ ...dummyUser, ...data })),
       delete: mock(() => Promise.resolve(dummyUser)),
       updatePassword: mock(() => Promise.resolve(dummyUser)),
+      findProfileByUserId: mock(() => Promise.resolve(null)),
+      upsertProfile: mock((userId, data) =>
+        Promise.resolve({
+          id: "profile-1",
+          userId,
+          bio: null,
+          phoneNumber: null,
+          dateOfBirth: null,
+          gender: null,
+          preferredPronouns: null,
+          address: null,
+          city: null,
+          state: null,
+          country: null,
+          postalCode: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...data,
+        })
+      ),
+      updateWithProfile: mock((id, userData, profileData) =>
+        Promise.resolve({
+          user: { ...dummyUser, ...userData },
+          profile: {
+            id: "profile-1",
+            userId: id,
+            bio: null,
+            phoneNumber: null,
+            dateOfBirth: null,
+            gender: null,
+            preferredPronouns: null,
+            address: null,
+            city: null,
+            state: null,
+            country: null,
+            postalCode: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...profileData,
+          },
+        })
+      ),
     };
   });
 
@@ -73,7 +116,7 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
 
     it("should create a user via CreateUserHandler", async () => {
       const handler = new CreateUserHandler(mockUserRepository);
-      const input = { name: "Alice", email: "alice@example.com", role: "user" as const };
+      const input = { name: "Alice", email: "alice@example.com", role: "user" as const, user: superAdminUser };
       const result = await handler.execute(input);
 
       expect(result.name).toBe("Alice");
@@ -92,11 +135,11 @@ describe("Users Bounded Context - Unit & Validation Tests", () => {
 
     it("should update user profile via UpdateProfileHandler", async () => {
       const handler = new UpdateProfileHandler(mockUserRepository);
-      const input = { id: "user-1", name: "John Updated" };
+      const input = { id: "user-1", name: "John Updated", role: "user" as const, user: superAdminUser };
       const result = await handler.execute(input);
 
       expect(result.name).toBe("John Updated");
-      expect(mockUserRepository.update).toHaveBeenCalled();
+      expect(mockUserRepository.updateWithProfile).toHaveBeenCalled();
     });
 
     it("should delete user via DeleteUserHandler", async () => {

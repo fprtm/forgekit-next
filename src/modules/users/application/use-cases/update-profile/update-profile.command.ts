@@ -1,7 +1,7 @@
-import { AuthUser } from "@/modules/auth/domain/types"
 import { UserRole } from "@/shared/config/roles"
+import { AuthenticatedCommand } from "@/shared/domain/types/authenticated-command"
 
-export interface UpdateProfileCommand {
+export interface UpdateProfileCommand extends AuthenticatedCommand {
   id: string
   name?: string
   email?: string
@@ -17,5 +17,4 @@ export interface UpdateProfileCommand {
   state?: string | null
   country?: string | null
   postalCode?: string | null
-  currentUser?: AuthUser
 }

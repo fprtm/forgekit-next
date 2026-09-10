@@ -10,7 +10,10 @@ import { UserRole } from "@/shared/config/roles";
 import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { loginLimiter } from "@/shared/lib/rate-limit";
+import { getClientIp } from "@/shared/lib/get-client-ip";
 import { logger } from "@/shared/lib/logger";
+import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
+import { UserLoggedInEvent, UserLoggedOutEvent } from "@/modules/auth/domain/events/auth.events";
 
 const userRepo = new DrizzleUserRepository();
 const passwordHasher = new BcryptPasswordHasher();
@@ -33,7 +36,7 @@ const nextAuthResult = NextAuth({
           return null;
         }
 
-        const ip = request?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+        const ip = getClientIp(request?.headers as Headers | undefined);
         const { success } = await loginLimiter.limit(ip);
         if (!success) {
           return null;
@@ -111,7 +114,22 @@ const nextAuthResult = NextAuth({
       }
       return session
     },
-  }
+  },
+  events: {
+    async signIn({ user }) {
+      if (!user.id) return;
+      await eventDispatcher
+        .dispatch(new UserLoggedInEvent(user.id))
+        .catch((err) => logger.error({ err }, "Failed to dispatch UserLoggedInEvent"));
+    },
+    async signOut(message) {
+      const userId = "token" in message ? (message.token?.id as string | undefined) : undefined;
+      if (!userId) return;
+      await eventDispatcher
+        .dispatch(new UserLoggedOutEvent(userId))
+        .catch((err) => logger.error({ err }, "Failed to dispatch UserLoggedOutEvent"));
+    },
+  },
 })
 
 

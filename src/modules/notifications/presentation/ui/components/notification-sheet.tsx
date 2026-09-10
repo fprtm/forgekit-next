@@ -14,7 +14,7 @@ import {
 } from "@/shared/components/ui/sheet"
 import { format } from "date-fns"
 import { getNotificationsAction, getUnreadCountAction, markAsReadAction, markAllAsReadAction } from "../../http/actions/notification.actions"
-import type { NotificationEntity, NotificationType, NotificationPriority } from "../../../domain/entities/notification.entity"
+import type { NotificationRow, NotificationType, NotificationPriority } from "../../../domain/entities/notification.entity"
 
 const typeConfig: Record<NotificationType, { icon: React.ElementType; label: string; color: string }> = {
   system: { icon: Settings, label: "System", color: "text-zinc-500" },
@@ -35,7 +35,7 @@ const PAGE_SIZE = 20
 
 export function NotificationSheet() {
   const router = useRouter()
-  const [notifications, setNotifications] = useState<NotificationEntity[]>([])
+  const [notifications, setNotifications] = useState<NotificationRow[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -137,6 +137,7 @@ export function NotificationSheet() {
           size="icon"
           className="relative h-9 w-9 rounded-full"
           aria-label="Notifications"
+          data-testid="notification-bell-button"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -149,7 +150,7 @@ export function NotificationSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col" data-testid="notification-sheet">
         <SheetHeader className="px-6 pt-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-800/50">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-lg font-bold">Notifications</SheetTitle>
@@ -159,6 +160,7 @@ export function NotificationSheet() {
                 size="sm"
                 className="h-8 text-xs gap-1.5 text-blue-600 hover:text-blue-700"
                 onClick={handleMarkAllAsRead}
+                data-testid="mark-all-read-button"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Mark all read
@@ -199,6 +201,7 @@ export function NotificationSheet() {
                     type="button"
                     onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                     disabled={notification.read}
+                    data-testid={`notification-item-${notification.id}`}
                     className={`w-full text-left px-6 py-4 transition-colors ${
                       notification.read
                         ? "bg-background hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30"

@@ -1,6 +1,8 @@
-import { NotificationRepository } from "@/modules/notifications/domain/repositories/notification.repository";
+import { INotificationRepository } from "@/modules/notifications/domain/repositories/notification-repository.interface";
 import { UpdateUserSettingCommand } from "@/modules/notifications/application/use-cases/update-user-setting/update-user-setting.command";
 import { UserNotificationSettingsEntity, NotificationType } from "@/modules/notifications/domain/entities/notification.entity";
+import { eventDispatcher } from "@/shared/application/services/event-dispatcher.service";
+import { NotificationSettingUpdatedEvent } from "@/modules/notifications/domain/events/notification.events";
 
 const MANDATORY_TYPES: NotificationType[] = ["system", "security"];
 
@@ -21,14 +23,16 @@ function applySubscriptions(
 }
 
 export class UpdateUserSettingHandler {
-  constructor(private readonly notificationRepo: NotificationRepository) {}
+  constructor(private readonly notificationRepo: INotificationRepository) {}
 
   async execute(command: UpdateUserSettingCommand): Promise<UserNotificationSettingsEntity> {
     const existing = await this.notificationRepo.findSettingsByUserId(command.userId);
 
+    let result: UserNotificationSettingsEntity;
+
     if (!existing) {
       const subUpdate = command.subscriptions ?? {};
-      return this.notificationRepo.saveSettings({
+      result = await this.notificationRepo.saveSettings({
         userId: command.userId,
         email: command.email !== false,
         push: command.push !== false,
@@ -39,13 +43,17 @@ export class UpdateUserSettingHandler {
         product: subUpdate.product ?? true,
         general: subUpdate.general ?? true,
       });
+    } else {
+      result = await this.notificationRepo.updateSettings(command.userId, {
+        ...(command.email !== undefined && { email: command.email }),
+        ...(command.push !== undefined && { push: command.push }),
+        ...(command.whatsapp !== undefined && { whatsapp: command.whatsapp }),
+        ...applySubscriptions(existing, command.subscriptions),
+      });
     }
 
-    return this.notificationRepo.updateSettings(command.userId, {
-      ...(command.email !== undefined && { email: command.email }),
-      ...(command.push !== undefined && { push: command.push }),
-      ...(command.whatsapp !== undefined && { whatsapp: command.whatsapp }),
-      ...applySubscriptions(existing, command.subscriptions),
-    });
+    await eventDispatcher.dispatch(new NotificationSettingUpdatedEvent(command.userId));
+
+    return result;
   }
 }

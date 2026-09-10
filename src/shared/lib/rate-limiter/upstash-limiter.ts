@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { env } from "@/shared/config/env";
 import type { IRateLimiter, RateLimitResult } from "./types";
 
 export class UpstashRateLimiter implements IRateLimiter {
@@ -7,8 +8,8 @@ export class UpstashRateLimiter implements IRateLimiter {
 
   constructor(name: string, maxRequests: number, windowMs: number) {
     const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      url: env.UPSTASH_REDIS_REST_URL!,
+      token: env.UPSTASH_REDIS_REST_TOKEN!,
     });
     this.ratelimit = new Ratelimit({
       redis,

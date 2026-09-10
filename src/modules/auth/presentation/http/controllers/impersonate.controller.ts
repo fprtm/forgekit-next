@@ -3,12 +3,16 @@ import { apiSuccess, apiError, handleApiError } from "@/shared/lib/api-response"
 import { auth } from "@/shared/lib/auth";
 import { DrizzleUserRepository } from "@/modules/users/infrastructure/database/repositories/drizzle-user.repository";
 import { ImpersonateUserHandler } from "@/modules/auth/application/use-cases/impersonate-user/impersonate-user.handler";
+import { NextCookieSessionStore } from "@/modules/auth/infrastructure/services/next-cookie-session-store";
 import { can } from "@/modules/auth/domain/policies";
 import { impersonateLimiter } from "@/shared/lib/rate-limit";
+import { getClientIp } from "@/shared/lib/get-client-ip";
 import { verifyCsrfToken } from "@/shared/lib/csrf";
+import { impersonateSchema } from "@/modules/auth/domain/validations";
 
 const userRepo = new DrizzleUserRepository();
-const impersonateUC = new ImpersonateUserHandler(userRepo);
+const sessionStore = new NextCookieSessionStore();
+const impersonateUC = new ImpersonateUserHandler(userRepo, sessionStore);
 
 export class ImpersonateController {
   public async impersonate(req: NextRequest): Promise<NextResponse> {
@@ -17,7 +21,7 @@ export class ImpersonateController {
         return apiError("Invalid CSRF token", 403);
       }
 
-      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+      const ip = getClientIp(req.headers);
       const { success } = await impersonateLimiter.limit(ip);
       if (!success) {
         return apiError("Too many impersonation attempts. Please try again later.", 429);
@@ -36,15 +40,14 @@ export class ImpersonateController {
       }
 
       const body = await req.json();
-      const targetUserId = body.targetUserId;
-
-      if (!targetUserId) {
-        return apiError("targetUserId is required", 400);
+      const parsed = impersonateSchema.safeParse(body);
+      if (!parsed.success) {
+        return apiError(parsed.error.issues.map((issue) => issue.message).join(", "), 400);
       }
 
       const result = await impersonateUC.execute({
         superAdminId: session.user.originalUserId || session.user.id,
-        targetUserId,
+        targetUserId: parsed.data.targetUserId,
       });
 
       return apiSuccess(result, 200);
@@ -55,6 +58,10 @@ export class ImpersonateController {
 
   public async stopImpersonation(req: NextRequest): Promise<NextResponse> {
     try {
+      if (!(await verifyCsrfToken(req))) {
+        return apiError("Invalid CSRF token", 403);
+      }
+
       const session = await auth();
       if (!session || !session.user) {
         return apiError("Unauthorized", 401);

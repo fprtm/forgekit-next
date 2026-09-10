@@ -1,3 +1,3 @@
-import { UserEntity } from "../../../domain/entities/user.entity"
+import { UserEntityProps } from "../../../domain/entities/user.entity"
 
-export type CreateUserDTO = UserEntity
+export type CreateUserDTO = UserEntityProps

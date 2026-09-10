@@ -11,16 +11,24 @@ export class CreateProductHandler {
 
   async execute(command: CreateProductCommand): Promise<CreateProductDTO> {
     const validated = createProductSchema.parse(command)
-    const createdProduct = await this.productRepository.create({
+
+    // Validates invariants (e.g. price) via PriceValueObject before persisting
+    const productEntity = ProductEntity.create({
       name: validated.name,
       description: validated.description || null,
       price: validated.price,
     })
 
+    const createdProduct = await this.productRepository.create({
+      name: productEntity.name,
+      description: productEntity.description,
+      price: productEntity.price,
+    })
+
     await eventDispatcher.dispatch(
       new ProductCreatedEvent(
-        createdProduct as ProductEntity,
-        command.user?.id || null
+        createdProduct,
+        command.user.id
       )
     )
 

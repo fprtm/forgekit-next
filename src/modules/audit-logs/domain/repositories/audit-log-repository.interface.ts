@@ -1,7 +1,7 @@
-import { AuditLogEntity } from "../entities/audit-log.entity";
+import { AuditLogEntity, AuditLogProps } from "../entities/audit-log.entity";
 
 export interface IAuditLogRepository {
-  create(log: Omit<AuditLogEntity, "id" | "createdAt">): Promise<AuditLogEntity>;
+  create(log: Omit<AuditLogProps, "id" | "createdAt">): Promise<AuditLogEntity>;
   findMany(options?: {
     limit?: number;
     offset?: number;

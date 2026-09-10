@@ -28,8 +28,20 @@ export const loginSchema = z.object({
   password: z.string().min(8, "Password minimal 8 characters"),
 })
 
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+    confirmNewPassword: z.string().min(8, "Password must be at least 8 characters long"),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Passwords do not match",
+    path: ["confirmNewPassword"],
+  })
+
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
 export type UpdateUserDTO = z.input<typeof updateUserSchema>
 export type CreateUserInput = z.infer<typeof createUserSchema>
 export type CreateUserDTO = z.input<typeof createUserSchema>
 export type LoginInput = z.infer<typeof loginSchema>
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>

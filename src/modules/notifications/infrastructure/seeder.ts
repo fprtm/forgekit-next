@@ -6,7 +6,7 @@ export async function seed(db: NodePgDatabase) {
 
   const demoNotifications = [
     {
-      userId: "seed-default-user",
+      userId: "e2e-user-1",
       title: "Welcome to ForgeKit!",
       message: "Thank you for joining our platform. Explore the dashboard to get started.",
       type: "system" as const,
@@ -15,7 +15,7 @@ export async function seed(db: NodePgDatabase) {
       readAt: null,
     },
     {
-      userId: "seed-default-user",
+      userId: "e2e-user-1",
       title: "Security Alert: New Login",
       message: "Your account was logged in from a new device. If this wasn't you, please contact support.",
       type: "security" as const,
@@ -24,7 +24,7 @@ export async function seed(db: NodePgDatabase) {
       readAt: null,
     },
     {
-      userId: "seed-default-user",
+      userId: "e2e-user-1",
       title: "Product Created Successfully",
       message: "Your product 'Premium Laptop' has been created and is now visible in the marketplace.",
       type: "product" as const,

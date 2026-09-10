@@ -1,4 +1,5 @@
 import { Action } from "@/modules/auth/domain/types";
+import { routes } from "@/shared/config/routes";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -26,46 +27,51 @@ export interface SidebarMenuItem {
 
 export const sidebarMenuItems: SidebarMenuItem[] = [
   {
-    href: "/d",
+    href: routes.dashboard.root,
     label: "Dashboard",
     icon: LayoutDashboard
   },
   {
-    href: "/d/products",
+    href: routes.dashboard.products.list,
     label: "Products",
     icon: ShoppingBag,
     requiredAction: "products:read"
   },
   {
-    href: "/d/users",
+    href: routes.dashboard.users.root,
     label: "Users",
     icon: Users,
     requiredAction: "users:read",
     children: [
       {
-        href: "/d/users/accounts",
+        href: routes.dashboard.users.accounts,
         label: "Accounts",
         requiredAction: "users:read"
       },
       {
-        href: "/d/users/admins",
+        href: routes.dashboard.users.admins,
         label: "Admins",
         requiredAction: "users:read"
       },
       {
-        href: "/d/users/users",
+        href: routes.dashboard.users.users,
         label: "Users",
         requiredAction: "users:read"
       },
     ],
   },
   {
-    href: "/d/settings",
+    href: routes.dashboard.settings.root,
     label: "Settings",
     icon: Settings,
     children: [
       {
-        href: "/d/settings/notifications",
+        href: routes.dashboard.settings.root,
+        label: "General",
+        icon: Settings,
+      },
+      {
+        href: routes.dashboard.settings.notifications,
         label: "Notifications",
         icon: Bell,
       },
